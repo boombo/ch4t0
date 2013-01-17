@@ -14,7 +14,7 @@ $('#map').mapbox(TileJSONs, function(map, tiledata) {
     map.getLayer('chateaux').composite(false);
 
     // Disable all overlay layers by default
-    //map.disableLayer('building');
+    map.disableLayer('chateaux');
 
     // Set initial latitude, longitude and zoom level
     map.setCenterZoom({
