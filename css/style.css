@@ -110,23 +110,23 @@ body > div {
 
 #content {
 	position: absolute;
-    height: 200px;
-	width: 100%;
-	bottom: 0px;
+    height: 100%;
+    width: 300px;
+    right: 0px;
     background: rgb(255,255,255); /* old ie */
     background: rgba(255,255,255,.9);
     border-bottom: 1px solid #ccc;
     border-top: 5px solid #333;
     overflow-y: hidden;
     z-index: 2;
+    border-left: 1px solid #BBB;
     }
     
 #about {
-    margin-left: 150px;
-    width: 689px;
+    margin-top: 150px;
+    width: 270px;
     float: left;
-    padding: 0 20px;
-    border-left: 1px solid #bbb;
+    padding: 0 0 0 20px;
     }
 
 .layers {
@@ -227,7 +227,7 @@ a.zoomer {
 
 .map-tooltip {
     border:none;
-    background:none;
+    background-color:white;
     border-radius:none;
     -moz-border-radius:none;
     -webkit-border-radius:none;
@@ -238,7 +238,7 @@ a.zoomer {
     top: auto;
     right: 10px;
     border: none;
-    color: white;
+    color: black;
     font-size: 11px;
     width: 200px;
     margin-left: -100px;
