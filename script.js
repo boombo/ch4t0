@@ -24,8 +24,8 @@ $('#map').mapbox(TileJSONs, function(map, tiledata) {
         lat: 48.583,
         lon: 7.750
     }, 8);
-
-    map.setPanLimits([{ lat: -20, lon: 0 }, { lat: 0, lon: 20 }]);
+    map.setZoomRange(5, 11);
+    map.setPanLimits([{ lat: 35.3073, lon: -19.6518 }, { lat: 59.5726, lon: 34.0933}]);
 
     // Set minimum and maximum zoom levels
     //map.setZoomRange(0, 15);
