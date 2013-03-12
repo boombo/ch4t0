@@ -6152,6 +6152,8 @@ wax.tooltip = function() {
                 parent.style.cursor = 'pointer';
                 tooltips.push(parent.appendChild(getTooltip(content)));
                 _currentContent = content;
+                //TSC 
+                $("#content h1").html(content);
             }
         } else {
             content = o.content || o.formatter({ format: 'full' }, o.data);

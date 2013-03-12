@@ -111,7 +111,7 @@ body > div {
 #content {
 	position: absolute;
     height: 100%;
-    width: 300px;
+    width: 400px;
     right: 0px;
     background: rgb(255,255,255); /* old ie */
     background: rgba(255,255,255,.9);
@@ -343,7 +343,7 @@ a.zoomer {
     }
 
 .map-attribution {
-    bottom: 205px;
+    /*bottom: 205px;*/
     }
 
 .wax-share h3 {

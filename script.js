@@ -17,7 +17,8 @@ $('#map').mapbox(TileJSONs, function(map, tiledata) {
     map.getLayer('chateaux').composite(false);
 
     // Disable all overlay layers by default
-    map.disableLayer('chateaux');
+    //map.disableLayer('chateaux');
+    map.getLayer('chateaux').disable();
 
     // Set initial latitude, longitude and zoom level
     /*map.setCenterZoom({
@@ -32,5 +33,7 @@ $('#map').mapbox(TileJSONs, function(map, tiledata) {
 
     // Enable share control
     mapbox.share().map(map).add();
+
+   
 
 });
