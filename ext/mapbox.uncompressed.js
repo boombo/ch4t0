@@ -6142,12 +6142,41 @@ wax.tooltip = function() {
         }
     }
 
+    function getWkpdData(title){
+     /* $.getJSON("http://fr.wikipedia.org/w/api.php?format=json&action=query&titles="+title+"&prop=extracts&callback=?", function(json) {
+          for (var key in json.query.pages) {
+            if (json.query.pages.hasOwnProperty(key)) {
+              $("#content p").html(json.query.pages[key].extract);
+              return;
+            }
+          } 
+      });*/
+
+      $.ajax(
+      {
+        url: "http://fr.wikipedia.org/w/api.php?format=json&action=query&titles="+title+"&prop=extracts",
+        dataType: "jsonp",
+        //async: false,
+        success: function(json)
+        {
+           for (var key in json.query.pages) {
+            if (json.query.pages.hasOwnProperty(key)) {
+              $("#content p").html(json.query.pages[key].extract);
+              return;
+            }
+          } 
+        }
+      });
+    }
+
     function on(o) {
         var content;
         if (o.e.type === 'mousemove' || !o.e.type) {
             if (!popped) {
                 content = o.content || o.formatter({ format: 'teaser' }, o.data);
                 if (!content || content == _currentContent) return;
+                // TSC 
+                if (o.data.wikipedia) getWkpdData(o.data.wikipedia);
                 hide();
                 parent.style.cursor = 'pointer';
                 tooltips.push(parent.appendChild(getTooltip(content)));

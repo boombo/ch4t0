@@ -123,8 +123,8 @@ body > div {
     }
     
 #about {
-    margin-top: 150px;
-    width: 270px;
+    /*margin-top: 150px;
+    width: 270px;*/
     float: left;
     padding: 0 0 0 20px;
     }
@@ -241,6 +241,7 @@ a.zoomer {
     color: black;
     font-size: 11px;
     width: 200px;
+    margin-right:400px;
     margin-left: -100px;
     line-height: 16px;
     margin-bottom: 20px;
