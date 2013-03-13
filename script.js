@@ -10,7 +10,7 @@ $('#map').mapbox(TileJSONs, function(map, tiledata) {
     map.getLayerAt(0).named('base');
     map.getLayerAt(1).named('base2');
     map.getLayerAt(2).named('chateaux');
-
+ 
     // Don't composite base layer with other layers
     map.getLayer('base').composite(true);
     map.getLayer('base2').composite(true);
