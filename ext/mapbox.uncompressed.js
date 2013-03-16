@@ -10,12 +10,12 @@
   * dperini: https://github.com/dperini/nwevents
   * the entire mootools team: github.com/mootools/mootools-core
   */
-!function (name, context, definition) {
-  if (typeof module !== 'undefined') module.exports = definition(name, context);
-  else if (typeof define === 'function' && typeof define.amd  === 'object') define(definition);
-  else context[name] = definition(name, context);
-}('bean', this, function (name, context) {
-  var win = window
+  !function (name, context, definition) {
+    if (typeof module !== 'undefined') module.exports = definition(name, context);
+    else if (typeof define === 'function' && typeof define.amd  === 'object') define(definition);
+    else context[name] = definition(name, context);
+  }('bean', this, function (name, context) {
+    var win = window
     , old = context[name]
     , overOut = /over|out/
     , namespaceRegex = /[^\.]*(?=\..*)\.|.*/
@@ -39,10 +39,10 @@
     , ONE = {} // singleton for quick matching making add() do one()
 
     , nativeEvents = (function (hash, events, i) {
-        for (i = 0; i < events.length; i++)
-          hash[events[i]] = 1
-        return hash
-      }({}, (
+      for (i = 0; i < events.length; i++)
+        hash[events[i]] = 1
+      return hash
+    }({}, (
           'click dblclick mouseup mousedown contextmenu ' +                  // mouse buttons
           'mousewheel mousemultiwheel DOMMouseScroll ' +                     // mouse wheel
           'mouseover mouseout mousemove selectstart selectend ' +            // mouse movement
@@ -68,42 +68,42 @@
             'volumechange cuechange ' +                                        // media
             'checking noupdate downloading cached updateready obsolete ' +     // appcache
             '' : '')
-        ).split(' ')
-      ))
+).split(' ')
+))
 
-    , customEvents = (function () {
-        var cdp = 'compareDocumentPosition'
-          , isAncestor = cdp in root
-              ? function (element, container) {
-                  return container[cdp] && (container[cdp](element) & 16) === 16
-                }
-              : 'contains' in root
-                ? function (element, container) {
-                    container = container.nodeType === 9 || container === window ? root : container
-                    return container !== element && container.contains(element)
-                  }
-                : function (element, container) {
-                    while (element = element.parentNode) if (element === container) return 1
-                    return 0
-                  }
+, customEvents = (function () {
+  var cdp = 'compareDocumentPosition'
+  , isAncestor = cdp in root
+  ? function (element, container) {
+    return container[cdp] && (container[cdp](element) & 16) === 16
+  }
+  : 'contains' in root
+  ? function (element, container) {
+    container = container.nodeType === 9 || container === window ? root : container
+    return container !== element && container.contains(element)
+  }
+  : function (element, container) {
+    while (element = element.parentNode) if (element === container) return 1
+      return 0
+  }
 
-        function check(event) {
-          var related = event.relatedTarget
-          return !related
-            ? related === null
-            : (related !== this && related.prefix !== 'xul' && !/document/.test(this.toString()) && !isAncestor(related, this))
-        }
+  function check(event) {
+    var related = event.relatedTarget
+    return !related
+    ? related === null
+    : (related !== this && related.prefix !== 'xul' && !/document/.test(this.toString()) && !isAncestor(related, this))
+  }
 
-        return {
-            mouseenter: { base: 'mouseover', condition: check }
-          , mouseleave: { base: 'mouseout', condition: check }
-          , mousewheel: { base: /Firefox/.test(navigator.userAgent) ? 'DOMMouseScroll' : 'mousewheel' }
-        }
-      }())
+  return {
+    mouseenter: { base: 'mouseover', condition: check }
+    , mouseleave: { base: 'mouseout', condition: check }
+    , mousewheel: { base: /Firefox/.test(navigator.userAgent) ? 'DOMMouseScroll' : 'mousewheel' }
+  }
+}())
 
-    , fixEvent = (function () {
-        var commonProps = 'altKey attrChange attrName bubbles cancelable ctrlKey currentTarget detail eventPhase getModifierState isTrusted metaKey relatedNode relatedTarget shiftKey srcElement target timeStamp type view which'.split(' ')
-          , mouseProps = commonProps.concat('button buttons clientX clientY dataTransfer fromElement offsetX offsetY pageX pageY screenX screenY toElement'.split(' '))
+, fixEvent = (function () {
+  var commonProps = 'altKey attrChange attrName bubbles cancelable ctrlKey currentTarget detail eventPhase getModifierState isTrusted metaKey relatedNode relatedTarget shiftKey srcElement target timeStamp type view which'.split(' ')
+  , mouseProps = commonProps.concat('button buttons clientX clientY dataTransfer fromElement offsetX offsetY pageX pageY screenX screenY toElement'.split(' '))
           , mouseWheelProps = mouseProps.concat('wheelDelta wheelDeltaX wheelDeltaY wheelDeltaZ axis'.split(' ')) // 'axis' is FF specific
           , keyProps = commonProps.concat('char charCode key keyCode keyIdentifier keyLocation'.split(' '))
           , textProps = commonProps.concat(['data'])
@@ -111,36 +111,36 @@
           , messageProps = commonProps.concat(['data', 'origin', 'source'])
           , preventDefault = 'preventDefault'
           , createPreventDefault = function (event) {
-              return function () {
-                if (event[preventDefault])
-                  event[preventDefault]()
-                else
-                  event.returnValue = false
-              }
+            return function () {
+              if (event[preventDefault])
+                event[preventDefault]()
+              else
+                event.returnValue = false
             }
+          }
           , stopPropagation = 'stopPropagation'
           , createStopPropagation = function (event) {
-              return function () {
-                if (event[stopPropagation])
-                  event[stopPropagation]()
-                else
-                  event.cancelBubble = true
-              }
+            return function () {
+              if (event[stopPropagation])
+                event[stopPropagation]()
+              else
+                event.cancelBubble = true
             }
+          }
           , createStop = function (synEvent) {
-              return function () {
-                synEvent[preventDefault]()
-                synEvent[stopPropagation]()
-                synEvent.stopped = true
-              }
+            return function () {
+              synEvent[preventDefault]()
+              synEvent[stopPropagation]()
+              synEvent.stopped = true
             }
+          }
           , copyProps = function (event, result, props) {
-              var i, p
-              for (i = props.length; i--;) {
-                p = props[i]
-                if (!(p in result) && p in event) result[p] = event[p]
-              }
+            var i, p
+            for (i = props.length; i--;) {
+              p = props[i]
+              if (!(p in result) && p in event) result[p] = event[p]
             }
+        }
 
         return function (event, isNative) {
           var result = { originalEvent: event, isNative: isNative }
@@ -148,8 +148,8 @@
             return result
 
           var props
-            , type = event.type
-            , target = event[targetS] || event.srcElement
+          , type = event.type
+          , target = event[targetS] || event.srcElement
 
           result[preventDefault] = createPreventDefault(event)
           result[stopPropagation] = createStopPropagation(event)
@@ -189,12 +189,12 @@
       }())
 
       // if we're in old IE we can't do onpropertychange on doc or win so we use doc.documentElement for both
-    , targetElement = function (element, isNative) {
+      , targetElement = function (element, isNative) {
         return !W3C_MODEL && !isNative && (element === doc || element === win) ? root : element
       }
 
       // we use one of these per listener, of any type
-    , RegEntry = (function () {
+      , RegEntry = (function () {
         function entry(element, type, handler, original, namespaces) {
           var isNative = this.isNative = nativeEvents[type] && element[eventSupport]
           this.element = element
@@ -227,17 +227,17 @@
             }
 
             // match by element, original fn (opt), handler fn (opt)
-          , matches: function (checkElement, checkOriginal, checkHandler) {
+            , matches: function (checkElement, checkOriginal, checkHandler) {
               return this.element === checkElement &&
-                (!checkOriginal || this.original === checkOriginal) &&
-                (!checkHandler || this.handler === checkHandler)
+              (!checkOriginal || this.original === checkOriginal) &&
+              (!checkHandler || this.handler === checkHandler)
             }
-        }
+          }
 
-        return entry
-      }())
+          return entry
+        }())
 
-    , registry = (function () {
+, registry = (function () {
         // our map stores arrays by event type, just because it's better than storing
         // everything in a single array. uses '$' as a prefix for the keys for safety
         var map = {}
@@ -245,7 +245,7 @@
           // generic functional search of our registry for matching listeners,
           // `fn` returns false to break out of the loop
           , forAll = function (element, type, original, handler, fn) {
-              if (!type || type === '*') {
+            if (!type || type === '*') {
                 // search the whole registry
                 for (var t in map) {
                   if (t.charAt(0) === '$')
@@ -259,11 +259,11 @@
                   if (all || list[i].matches(element, original, handler))
                     if (!fn(list[i], list, i, type))
                       return
+                  }
                 }
               }
-            }
 
-          , has = function (element, type, original) {
+              , has = function (element, type, original) {
               // we're not using forAll here simply because it's a bit slower and this
               // needs to be fast
               var i, list = map['$' + type]
@@ -276,18 +276,18 @@
               return false
             }
 
-          , get = function (element, type, original) {
+            , get = function (element, type, original) {
               var entries = []
               forAll(element, type, original, null, function (entry) { return entries.push(entry) })
               return entries
             }
 
-          , put = function (entry) {
+            , put = function (entry) {
               (map['$' + entry.type] || (map['$' + entry.type] = [])).push(entry)
               return entry
             }
 
-          , del = function (entry) {
+            , del = function (entry) {
               forAll(entry.element, entry.type, null, entry.handler, function (entry, list, i) {
                 list.splice(i, 1)
                 if (list.length === 0)
@@ -297,7 +297,7 @@
             }
 
             // dump all entries, used for onunload
-          , entries = function () {
+            , entries = function () {
               var t, entries = []
               for (t in map) {
                 if (t.charAt(0) === '$')
@@ -306,23 +306,23 @@
               return entries
             }
 
-        return { has: has, get: get, put: put, del: del, entries: entries }
-      }())
+            return { has: has, get: get, put: put, del: del, entries: entries }
+          }())
 
-    , selectorEngine = doc[qSA]
-        ? function (s, r) {
-            return r[qSA](s)
-          }
-        : function () {
+, selectorEngine = doc[qSA]
+? function (s, r) {
+  return r[qSA](s)
+}
+: function () {
             throw new Error('Bean: No selector engine installed') // eeek
           }
 
-    , setSelectorEngine = function (e) {
-        selectorEngine = e
-      }
+          , setSelectorEngine = function (e) {
+            selectorEngine = e
+          }
 
       // add and remove listeners to DOM elements
-    , listener = W3C_MODEL ? function (element, type, fn, add) {
+      , listener = W3C_MODEL ? function (element, type, fn, add) {
         element[add ? addEvent : removeEvent](type, fn, false)
       } : function (element, type, fn, add, custom) {
         if (custom && add && element['_on' + custom] === null)
@@ -330,9 +330,9 @@
         element[add ? attachEvent : detachEvent]('on' + type, fn)
       }
 
-    , nativeHandler = function (element, fn, args) {
+      , nativeHandler = function (element, fn, args) {
         var beanDel = fn.__beanDel
-          , handler = function (event) {
+        , handler = function (event) {
           event = fixEvent(event || ((this[ownerDocument] || this.document || this).parentWindow || win).event, true)
           if (beanDel) // delegated event, fix the fix
             event.currentTarget = beanDel.ft(event[targetS], element)
@@ -342,9 +342,9 @@
         return handler
       }
 
-    , customHandler = function (element, fn, type, condition, args, isNative) {
+      , customHandler = function (element, fn, type, condition, args, isNative) {
         var beanDel = fn.__beanDel
-          , handler = function (event) {
+        , handler = function (event) {
           var target = beanDel ? beanDel.ft(event[targetS], element) : this // deleated event
           if (condition ? condition.apply(target, arguments) : W3C_MODEL ? true : event && event.propertyName === '_on' + type || !event) {
             if (event) {
@@ -358,7 +358,7 @@
         return handler
       }
 
-    , once = function (rm, element, type, fn, originalFn) {
+      , once = function (rm, element, type, fn, originalFn) {
         // wrap the handler in a handler that does a remove as well
         return function () {
           rm(element, type, originalFn)
@@ -366,10 +366,10 @@
         }
       }
 
-    , removeListener = function (element, orgType, handler, namespaces) {
+      , removeListener = function (element, orgType, handler, namespaces) {
         var i, l, entry
-          , type = (orgType && orgType.replace(nameRegex, ''))
-          , handlers = registry.get(element, type, handler)
+        , type = (orgType && orgType.replace(nameRegex, ''))
+        , handlers = registry.get(element, type, handler)
 
         for (i = 0, l = handlers.length; i < l; i++) {
           if (handlers[i].inNamespaces(namespaces)) {
@@ -385,10 +385,10 @@
         }
       }
 
-    , addListener = function (element, orgType, fn, originalFn, args) {
+      , addListener = function (element, orgType, fn, originalFn, args) {
         var entry
-          , type = orgType.replace(nameRegex, '')
-          , namespaces = orgType.replace(namespaceRegex, '').split('.')
+        , type = orgType.replace(nameRegex, '')
+        , namespaces = orgType.replace(namespaceRegex, '').split('.')
 
         if (registry.has(element, type, fn))
           return element // no dupe
@@ -401,16 +401,16 @@
         }
         entry = registry.put(new RegEntry(element, type, fn, originalFn, namespaces[0] && namespaces))
         entry.handler = entry.isNative ?
-          nativeHandler(element, entry.handler, args) :
-          customHandler(element, entry.handler, type, false, args, false)
+        nativeHandler(element, entry.handler, args) :
+        customHandler(element, entry.handler, type, false, args, false)
         if (entry[eventSupport])
           listener(entry[targetS], entry.eventType, entry.handler, true, entry.customType)
       }
 
-    , del = function (selector, fn, $) {
+      , del = function (selector, fn, $) {
             //TODO: findTarget (therefore $) is called twice, once for match and once for
             // setting e.currentTarget, fix this so it's only needed once
-        var findTarget = function (target, root) {
+            var findTarget = function (target, root) {
               var i, array = typeof selector === 'string' ? $(selector, root) : selector
               for (; target && target !== root; target = target.parentNode) {
                 for (i = array.length; i--;) {
@@ -419,25 +419,25 @@
                 }
               }
             }
-          , handler = function (e) {
+            , handler = function (e) {
               var match = findTarget(e[targetS], this)
               match && fn.apply(match, arguments)
             }
 
-        handler.__beanDel = {
+            handler.__beanDel = {
             ft: findTarget // attach it here for customEvents to use too
-          , selector: selector
-          , $: $
+            , selector: selector
+            , $: $
+          }
+          return handler
         }
-        return handler
-      }
 
-    , remove = function (element, typeSpec, fn) {
-        var k, type, namespaces, i
+        , remove = function (element, typeSpec, fn) {
+          var k, type, namespaces, i
           , rm = removeListener
           , isString = typeSpec && typeof typeSpec === 'string'
 
-        if (isString && typeSpec.indexOf(' ') > 0) {
+          if (isString && typeSpec.indexOf(' ') > 0) {
           // remove(el, 't1 t2 t3', fn) or remove(el, 't1 t2 t3')
           typeSpec = typeSpec.split(' ')
           for (i = typeSpec.length; i--;)
@@ -466,10 +466,10 @@
       }
 
       // 5th argument, $=selector engine, is deprecated and will be removed
-    , add = function (element, events, fn, delfn, $) {
+      , add = function (element, events, fn, delfn, $) {
         var type, types, i, args
-          , originalFn = fn
-          , isDel = fn && typeof fn === 'string'
+        , originalFn = fn
+        , isDel = fn && typeof fn === 'string'
 
         if (events && !fn && typeof events === 'object') {
           for (type in events) {
@@ -484,26 +484,26 @@
           this === ONE && (fn = once(remove, element, events, fn, originalFn))
           for (i = types.length; i--;) addListener(element, types[i], fn, originalFn, args)
         }
-        return element
-      }
+      return element
+    }
 
     , one = function () {
-        return add.apply(ONE, arguments)
-      }
+      return add.apply(ONE, arguments)
+    }
 
     , fireListener = W3C_MODEL ? function (isNative, type, element) {
-        var evt = doc.createEvent(isNative ? 'HTMLEvents' : 'UIEvents')
-        evt[isNative ? 'initEvent' : 'initUIEvent'](type, true, true, win, 1)
-        element.dispatchEvent(evt)
-      } : function (isNative, type, element) {
-        element = targetElement(element, isNative)
+      var evt = doc.createEvent(isNative ? 'HTMLEvents' : 'UIEvents')
+      evt[isNative ? 'initEvent' : 'initUIEvent'](type, true, true, win, 1)
+      element.dispatchEvent(evt)
+    } : function (isNative, type, element) {
+      element = targetElement(element, isNative)
         // if not-native then we're using onpropertychange so we just increment a custom property
         isNative ? element.fireEvent('on' + type, doc.createEventObject()) : element['_on' + type]++
       }
 
-    , fire = function (element, type, args) {
+      , fire = function (element, type, args) {
         var i, j, l, names, handlers
-          , types = type.split(' ')
+        , types = type.split(' ')
 
         for (i = types.length; i--;) {
           type = types[i].replace(nameRegex, '')
@@ -525,11 +525,11 @@
         return element
       }
 
-    , clone = function (element, from, type) {
+      , clone = function (element, from, type) {
         var i = 0
-          , handlers = registry.get(from, type)
-          , l = handlers.length
-          , args, beanDel
+        , handlers = registry.get(from, type)
+        , l = handlers.length
+        , args, beanDel
 
         for (;i < l; i++) {
           if (handlers[i].original) {
@@ -537,27 +537,27 @@
             if (beanDel) {
               args = [ element, beanDel.selector, handlers[i].type, handlers[i].original, beanDel.$]
             } else
-              args = [ element, handlers[i].type, handlers[i].original ]
+            args = [ element, handlers[i].type, handlers[i].original ]
             add.apply(null, args)
           }
         }
         return element
       }
 
-    , bean = {
-          add: add
+      , bean = {
+        add: add
         , one: one
         , remove: remove
         , clone: clone
         , fire: fire
         , setSelectorEngine: setSelectorEngine
         , noConflict: function () {
-            context[name] = old
-            return this
-          }
+          context[name] = old
+          return this
+        }
       }
 
-  if (win[attachEvent]) {
+      if (win[attachEvent]) {
     // for IE, clean up on unload to avoid leaks
     var cleanup = function () {
       var i, entries = registry.entries()
@@ -579,41 +579,41 @@
   * https://github.com/ded/reqwest
   * license MIT
   */
-!function (name, definition) {
-  if (typeof module != 'undefined') module.exports = definition()
-  else if (typeof define == 'function' && define.amd) define(definition)
-  else this[name] = definition()
-}('reqwest', function () {
+  !function (name, definition) {
+    if (typeof module != 'undefined') module.exports = definition()
+      else if (typeof define == 'function' && define.amd) define(definition)
+        else this[name] = definition()
+      }('reqwest', function () {
 
-  var win = window
-    , doc = document
-    , twoHundo = /^20\d$/
-    , byTag = 'getElementsByTagName'
-    , readyState = 'readyState'
-    , contentType = 'Content-Type'
-    , requestedWith = 'X-Requested-With'
-    , head = doc[byTag]('head')[0]
-    , uniqid = 0
-    , callbackPrefix = 'reqwest_' + (+new Date())
+        var win = window
+        , doc = document
+        , twoHundo = /^20\d$/
+        , byTag = 'getElementsByTagName'
+        , readyState = 'readyState'
+        , contentType = 'Content-Type'
+        , requestedWith = 'X-Requested-With'
+        , head = doc[byTag]('head')[0]
+        , uniqid = 0
+        , callbackPrefix = 'reqwest_' + (+new Date())
     , lastValue // data stored by the most recent JSONP callback
     , xmlHttpRequest = 'XMLHttpRequest'
 
-  var isArray = typeof Array.isArray == 'function' ? Array.isArray : function (a) {
-    return a instanceof Array
-  }
-  var defaultHeaders = {
+    var isArray = typeof Array.isArray == 'function' ? Array.isArray : function (a) {
+      return a instanceof Array
+    }
+    var defaultHeaders = {
       contentType: 'application/x-www-form-urlencoded'
-    , requestedWith: xmlHttpRequest
-    , accept: {
+      , requestedWith: xmlHttpRequest
+      , accept: {
         '*':  'text/javascript, text/html, application/xml, text/xml, */*'
-      , xml:  'application/xml, text/xml'
-      , html: 'text/html'
-      , text: 'text/plain'
-      , json: 'application/json, text/javascript'
-      , js:   'application/javascript, text/javascript'
+        , xml:  'application/xml, text/xml'
+        , html: 'text/html'
+        , text: 'text/plain'
+        , json: 'application/json, text/javascript'
+        , js:   'application/javascript, text/javascript'
       }
     }
-  var xhr = win[xmlHttpRequest] ?
+    var xhr = win[xmlHttpRequest] ?
     function () {
       return new XMLHttpRequest()
     } :
@@ -621,45 +621,45 @@
       return new ActiveXObject('Microsoft.XMLHTTP')
     }
 
-  function handleReadyState(o, success, error) {
-    return function () {
-      if (o && o[readyState] == 4) {
-        if (twoHundo.test(o.status)) {
-          success(o)
-        } else {
-          error(o)
+    function handleReadyState(o, success, error) {
+      return function () {
+        if (o && o[readyState] == 4) {
+          if (twoHundo.test(o.status)) {
+            success(o)
+          } else {
+            error(o)
+          }
         }
       }
     }
-  }
 
-  function setHeaders(http, o) {
-    var headers = o.headers || {}, h
-    headers.Accept = headers.Accept || defaultHeaders.accept[o.type] || defaultHeaders.accept['*']
+    function setHeaders(http, o) {
+      var headers = o.headers || {}, h
+      headers.Accept = headers.Accept || defaultHeaders.accept[o.type] || defaultHeaders.accept['*']
     // breaks cross-origin requests with legacy browsers
     if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
-    if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
-    for (h in headers) {
-      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
-    }
-  }
+      if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
+        for (h in headers) {
+          headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
+        }
+      }
 
-  function setCredentials(http, o) {
-    if (typeof o.withCredentials !== "undefined" && typeof http.withCredentials !== "undefined") {
-      http.withCredentials = !!o.withCredentials
-    }
-  }
+      function setCredentials(http, o) {
+        if (typeof o.withCredentials !== "undefined" && typeof http.withCredentials !== "undefined") {
+          http.withCredentials = !!o.withCredentials
+        }
+      }
 
-  function generalCallback(data) {
-    lastValue = data
-  }
+      function generalCallback(data) {
+        lastValue = data
+      }
 
-  function urlappend(url, s) {
-    return url + (/\?/.test(url) ? '&' : '?') + s
-  }
+      function urlappend(url, s) {
+        return url + (/\?/.test(url) ? '&' : '?') + s
+      }
 
-  function handleJsonp(o, fn, err, url) {
-    var reqId = uniqid++
+      function handleJsonp(o, fn, err, url) {
+        var reqId = uniqid++
       , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
       , cbval = o.jsonpCallbackName || reqwest.getcallbackPrefix(reqId)
       // , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
@@ -669,8 +669,8 @@
       , loaded = 0
       , isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1
 
-    if (match) {
-      if (match[3] === '?') {
+      if (match) {
+        if (match[3] === '?') {
         url = url.replace(cbreg, '$1=' + cbval) // wildcard callback func name
       } else {
         cbval = match[3] // provided callback func name
@@ -713,11 +713,11 @@
 
   function getRequest(o, fn, err) {
     var method = (o.method || 'GET').toUpperCase()
-      , url = typeof o === 'string' ? o : o.url
+    , url = typeof o === 'string' ? o : o.url
       // convert non-string objects to query-string form unless o.processData is false
       , data = (o.processData !== false && o.data && typeof o.data !== 'string')
-        ? reqwest.toQueryString(o.data)
-        : (o.data || null)
+      ? reqwest.toQueryString(o.data)
+      : (o.data || null)
       , http
 
     // if we're working on a GET request and we have data then we should append
@@ -729,7 +729,7 @@
 
     if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
 
-    http = xhr()
+      http = xhr()
     http.open(method, url, true)
     setHeaders(http, o)
     setCredentials(http, o)
@@ -769,7 +769,7 @@
     this._responseArgs = {}
 
     var self = this
-      , type = o.type || setType(this.url)
+    , type = o.type || setType(this.url)
 
     fn = fn || function () {}
 
@@ -809,20 +809,20 @@
       var r = resp.responseText
       if (r) {
         switch (type) {
-        case 'json':
+          case 'json':
           try {
             resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
           } catch (err) {
             return error(resp, 'Could not parse JSON in response', err)
           }
           break;
-        case 'js':
+          case 'js':
           resp = eval(r)
           break;
-        case 'html':
+          case 'html':
           resp = r
           break;
-        case 'xml':
+          case 'xml':
           resp = resp.responseXML;
           break;
         }
@@ -857,7 +857,7 @@
       this.request.abort()
     }
 
-  , retry: function () {
+    , retry: function () {
       init.call(this, this.o, this.fn)
     }
 
@@ -869,7 +869,7 @@
     /**
      * `then` will execute upon successful requests
      */
-  , then: function (success, fail) {
+     , then: function (success, fail) {
       if (this._fulfilled) {
         success(this._responseArgs.resp)
       } else if (this._erred) {
@@ -884,7 +884,7 @@
     /**
      * `always` will execute whether the request succeeds or fails
      */
-  , always: function (fn) {
+     , always: function (fn) {
       if (this._fulfilled || this._erred) {
         fn(this._responseArgs.resp)
       } else {
@@ -896,7 +896,7 @@
     /**
      * `fail` will execute when the request fails
      */
-  , fail: function (fn) {
+     , fail: function (fn) {
       if (this._erred) {
         fn(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
       } else {
@@ -917,8 +917,8 @@
 
   function serial(el, cb) {
     var n = el.name
-      , t = el.tagName.toLowerCase()
-      , optCb = function (o) {
+    , t = el.tagName.toLowerCase()
+    , optCb = function (o) {
           // IE gives value="" even where there is no value attribute
           // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
           if (o && !o.disabled)
@@ -929,19 +929,19 @@
     if (el.disabled || !n) return;
 
     switch (t) {
-    case 'input':
+      case 'input':
       if (!/reset|button|image|file/i.test(el.type)) {
         var ch = /checkbox/i.test(el.type)
-          , ra = /radio/i.test(el.type)
-          , val = el.value;
+        , ra = /radio/i.test(el.type)
+        , val = el.value;
         // WebKit gives us "" instead of "on" if a checkbox has no value, so correct it here
         (!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val))
       }
       break;
-    case 'textarea':
+      case 'textarea':
       cb(n, normalize(el.value))
       break;
-    case 'select':
+      case 'select':
       if (el.type.toLowerCase() === 'select-one') {
         optCb(el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null)
       } else {
@@ -958,20 +958,20 @@
   // called with 'this'=callback to use for serial() on each element
   function eachFormElement() {
     var cb = this
-      , e, i, j
-      , serializeSubtags = function (e, tags) {
-        for (var i = 0; i < tags.length; i++) {
-          var fa = e[byTag](tags[i])
-          for (j = 0; j < fa.length; j++) serial(fa[j], cb)
-        }
+    , e, i, j
+    , serializeSubtags = function (e, tags) {
+      for (var i = 0; i < tags.length; i++) {
+        var fa = e[byTag](tags[i])
+        for (j = 0; j < fa.length; j++) serial(fa[j], cb)
       }
-
-    for (i = 0; i < arguments.length; i++) {
-      e = arguments[i]
-      if (/input|select|textarea/i.test(e.tagName)) serial(e, cb)
-      serializeSubtags(e, [ 'input', 'select', 'textarea' ])
-    }
   }
+
+  for (i = 0; i < arguments.length; i++) {
+    e = arguments[i]
+    if (/input|select|textarea/i.test(e.tagName)) serial(e, cb)
+      serializeSubtags(e, [ 'input', 'select', 'textarea' ])
+  }
+}
 
   // standard query string style serialization
   function serializeQueryString() {
@@ -1001,38 +1001,38 @@
 
   reqwest.serialize = function () {
     if (arguments.length === 0) return ''
-    var opt, fn
-      , args = Array.prototype.slice.call(arguments, 0)
+      var opt, fn
+    , args = Array.prototype.slice.call(arguments, 0)
 
     opt = args.pop()
     opt && opt.nodeType && args.push(opt) && (opt = null)
     opt && (opt = opt.type)
 
     if (opt == 'map') fn = serializeHash
-    else if (opt == 'array') fn = reqwest.serializeArray
-    else fn = serializeQueryString
+      else if (opt == 'array') fn = reqwest.serializeArray
+        else fn = serializeQueryString
 
-    return fn.apply(null, args)
-  }
+          return fn.apply(null, args)
+      }
 
-  reqwest.toQueryString = function (o) {
-    var qs = '', i
-      , enc = encodeURIComponent
-      , push = function (k, v) {
+      reqwest.toQueryString = function (o) {
+        var qs = '', i
+        , enc = encodeURIComponent
+        , push = function (k, v) {
           qs += enc(k) + '=' + enc(v) + '&'
         }
 
-    if (isArray(o)) {
-      for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
-    } else {
-      for (var k in o) {
-        if (!Object.hasOwnProperty.call(o, k)) continue;
-        var v = o[k]
-        if (isArray(v)) {
-          for (i = 0; i < v.length; i++) push(k, v[i])
-        } else push(k, o[k])
+        if (isArray(o)) {
+          for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
+        } else {
+          for (var k in o) {
+            if (!Object.hasOwnProperty.call(o, k)) continue;
+            var v = o[k]
+            if (isArray(v)) {
+              for (i = 0; i < v.length; i++) push(k, v[i])
+            } else push(k, o[k])
+        }
       }
-    }
 
     // spaces should be + according to spec
     return qs.replace(/&$/, '').replace(/%20/g, '+')
@@ -1067,23 +1067,23 @@
   mustache.js — Logic-less templates in JavaScript
 
   See http://mustache.github.com/ for more info.
-*/
+  */
 
-var Mustache = function () {
-  var _toString = Object.prototype.toString;
+  var Mustache = function () {
+    var _toString = Object.prototype.toString;
 
-  Array.isArray = Array.isArray || function (obj) {
-    return _toString.call(obj) == "[object Array]";
-  }
-
-  var _trim = String.prototype.trim, trim;
-
-  if (_trim) {
-    trim = function (text) {
-      return text == null ? "" : _trim.call(text);
+    Array.isArray = Array.isArray || function (obj) {
+      return _toString.call(obj) == "[object Array]";
     }
-  } else {
-    var trimLeft, trimRight;
+
+    var _trim = String.prototype.trim, trim;
+
+    if (_trim) {
+      trim = function (text) {
+        return text == null ? "" : _trim.call(text);
+      }
+    } else {
+      var trimLeft, trimRight;
 
     // IE doesn't match non-breaking spaces with \s.
     if ((/\S/).test("\xA0")) {
@@ -1096,7 +1096,7 @@ var Mustache = function () {
 
     trim = function (text) {
       return text == null ? "" :
-        text.toString().replace(trimLeft, "").replace(trimRight, "");
+      text.toString().replace(trimLeft, "").replace(trimRight, "");
     }
   }
 
@@ -1164,26 +1164,26 @@ var Mustache = function () {
 
     /*
       Sends parsed lines
-    */
-    send: function (line) {
-      if (line !== "") {
-        this.buffer.push(line);
-      }
-    },
-
-    sendLines: function (text) {
-      if (text) {
-        var lines = text.split("\n");
-        for (var i = 0; i < lines.length; i++) {
-          this.send(lines[i]);
+      */
+      send: function (line) {
+        if (line !== "") {
+          this.buffer.push(line);
         }
-      }
-    },
+      },
+
+      sendLines: function (text) {
+        if (text) {
+          var lines = text.split("\n");
+          for (var i = 0; i < lines.length; i++) {
+            this.send(lines[i]);
+          }
+        }
+      },
 
     /*
       Looks for %PRAGMAS
-    */
-    render_pragmas: function (template) {
+      */
+      render_pragmas: function (template) {
       // no pragmas
       if (!this.includes("%", template)) {
         return template;
@@ -1212,23 +1212,23 @@ var Mustache = function () {
 
     /*
       Tries to find a partial in the curent scope and render it
-    */
-    render_partial: function (name, context, partials) {
-      name = trim(name);
-      if (!partials || partials[name] === undefined) {
-        throw({message: "unknown_partial '" + name + "'"});
-      }
-      if (!context || typeof context[name] != "object") {
-        return this.render(partials[name], context, partials, true);
-      }
-      return this.render(partials[name], context[name], partials, true);
-    },
+      */
+      render_partial: function (name, context, partials) {
+        name = trim(name);
+        if (!partials || partials[name] === undefined) {
+          throw({message: "unknown_partial '" + name + "'"});
+        }
+        if (!context || typeof context[name] != "object") {
+          return this.render(partials[name], context, partials, true);
+        }
+        return this.render(partials[name], context[name], partials, true);
+      },
 
     /*
       Renders inverted (^) and normal (#) sections
-    */
-    render_section: function (template, context, partials) {
-      if (!this.includes("#", template) && !this.includes("^", template)) {
+      */
+      render_section: function (template, context, partials) {
+        if (!this.includes("#", template) && !this.includes("^", template)) {
         // did not render anything, there were no sections
         return false;
       }
@@ -1252,7 +1252,7 @@ var Mustache = function () {
 
           "\\s*([\\s\\S]*)$",       // everything else in the string ($4). leading whitespace is dropped.
 
-        "g");
+          "g");
       });
 
 
@@ -1262,12 +1262,12 @@ var Mustache = function () {
         var renderedBefore = before ? that.render_tags(before, context, partials, true) : "",
 
         // after may contain both sections and tags, so use full rendering function
-            renderedAfter = after ? that.render(after, context, partials, true) : "",
+        renderedAfter = after ? that.render(after, context, partials, true) : "",
 
         // will be computed below
-            renderedContent,
+        renderedContent,
 
-            value = that.find(name, context);
+        value = that.find(name, context);
 
         if (type === "^") { // inverted section
           if (!value || Array.isArray(value) && value.length === 0) {
@@ -1298,12 +1298,12 @@ var Mustache = function () {
 
         return renderedBefore + renderedContent + renderedAfter;
       });
-    },
+},
 
     /*
       Replace {{foo}} and friends with values from our view
-    */
-    render_tags: function (template, context, partials, in_recursion) {
+      */
+      render_tags: function (template, context, partials, in_recursion) {
       // tit for tat
       var that = this;
 
@@ -1317,49 +1317,49 @@ var Mustache = function () {
       var tag_replace_callback = function (match, operator, name) {
         switch(operator) {
         case "!": // ignore comments
-          return "";
+        return "";
         case "=": // set new delimiters, rebuild the replace regexp
-          that.set_delimiters(name);
-          regex = new_regex();
-          return "";
+        that.set_delimiters(name);
+        regex = new_regex();
+        return "";
         case ">": // render partial
-          return that.render_partial(name, context, partials);
+        return that.render_partial(name, context, partials);
         case "{": // the triple mustache is unescaped
         case "&": // & operator is an alternative unescape method
-          return that.find(name, context);
+        return that.find(name, context);
         default: // escape the value
-          return escapeHTML(that.find(name, context));
-        }
-      };
-      var lines = template.split("\n");
-      for(var i = 0; i < lines.length; i++) {
-        lines[i] = lines[i].replace(regex, tag_replace_callback, this);
-        if (!in_recursion) {
-          this.send(lines[i]);
-        }
+        return escapeHTML(that.find(name, context));
       }
-
-      if (in_recursion) {
-        return lines.join("\n");
+    };
+    var lines = template.split("\n");
+    for(var i = 0; i < lines.length; i++) {
+      lines[i] = lines[i].replace(regex, tag_replace_callback, this);
+      if (!in_recursion) {
+        this.send(lines[i]);
       }
-    },
+    }
 
-    set_delimiters: function (delimiters) {
-      var dels = delimiters.split(" ");
-      this.otag = this.escape_regex(dels[0]);
-      this.ctag = this.escape_regex(dels[1]);
-    },
+    if (in_recursion) {
+      return lines.join("\n");
+    }
+  },
 
-    escape_regex: function (text) {
+  set_delimiters: function (delimiters) {
+    var dels = delimiters.split(" ");
+    this.otag = this.escape_regex(dels[0]);
+    this.ctag = this.escape_regex(dels[1]);
+  },
+
+  escape_regex: function (text) {
       // thank you Simon Willison
       if (!arguments.callee.sRE) {
         var specials = [
-          '/', '.', '*', '+', '?', '|',
-          '(', ')', '[', ']', '{', '}', '\\'
+        '/', '.', '*', '+', '?', '|',
+        '(', ')', '[', ']', '{', '}', '\\'
         ];
         arguments.callee.sRE = new RegExp(
           '(\\' + specials.join('|\\') + ')', 'g'
-        );
+          );
       }
       return text.replace(arguments.callee.sRE, '\\$1');
     },
@@ -1367,9 +1367,9 @@ var Mustache = function () {
     /*
       find `name` in current `context`. That is find me a value
       from the view object
-    */
-    find: function (name, context) {
-      name = trim(name);
+      */
+      find: function (name, context) {
+        name = trim(name);
 
       // Checks whether a value is thruthy or false or 0
       function is_kinda_truthy(bool) {
@@ -1446,67 +1446,67 @@ var Mustache = function () {
 
     /*
       Why, why, why? Because IE. Cry, cry cry.
-    */
-    map: function (array, fn) {
-      if (typeof array.map == "function") {
-        return array.map(fn);
-      } else {
-        var r = [];
-        var l = array.length;
-        for(var i = 0; i < l; i++) {
-          r.push(fn(array[i]));
+      */
+      map: function (array, fn) {
+        if (typeof array.map == "function") {
+          return array.map(fn);
+        } else {
+          var r = [];
+          var l = array.length;
+          for(var i = 0; i < l; i++) {
+            r.push(fn(array[i]));
+          }
+          return r;
         }
-        return r;
+      },
+
+      getCachedRegex: function (name, generator) {
+        var byOtag = regexCache[this.otag];
+        if (!byOtag) {
+          byOtag = regexCache[this.otag] = {};
+        }
+
+        var byCtag = byOtag[this.ctag];
+        if (!byCtag) {
+          byCtag = byOtag[this.ctag] = {};
+        }
+
+        var regex = byCtag[name];
+        if (!regex) {
+          regex = byCtag[name] = generator(this.otag, this.ctag);
+        }
+
+        return regex;
       }
-    },
+    };
 
-    getCachedRegex: function (name, generator) {
-      var byOtag = regexCache[this.otag];
-      if (!byOtag) {
-        byOtag = regexCache[this.otag] = {};
-      }
-
-      var byCtag = byOtag[this.ctag];
-      if (!byCtag) {
-        byCtag = byOtag[this.ctag] = {};
-      }
-
-      var regex = byCtag[name];
-      if (!regex) {
-        regex = byCtag[name] = generator(this.otag, this.ctag);
-      }
-
-      return regex;
-    }
-  };
-
-  return({
-    name: "mustache.js",
-    version: "0.4.0",
+    return({
+      name: "mustache.js",
+      version: "0.4.0",
 
     /*
       Turns a template and view into HTML
-    */
-    to_html: function (template, view, partials, send_fun) {
-      var renderer = new Renderer();
-      if (send_fun) {
-        renderer.send = send_fun;
+      */
+      to_html: function (template, view, partials, send_fun) {
+        var renderer = new Renderer();
+        if (send_fun) {
+          renderer.send = send_fun;
+        }
+        renderer.render(template, view || {}, partials);
+        if (!send_fun) {
+          return renderer.buffer.join("\n");
+        }
       }
-      renderer.render(template, view || {}, partials);
-      if (!send_fun) {
-        return renderer.buffer.join("\n");
-      }
-    }
-  });
-}();
-if (typeof module !== 'undefined' && module.exports) {
+    });
+  }();
+  if (typeof module !== 'undefined' && module.exports) {
     exports.name = Mustache.name;
     exports.version = Mustache.version;
 
     exports.to_html = function() {
       return Mustache.to_html.apply(this, arguments);
     };
-}
+  }
 /*!
  * Modest Maps JS v3.3.5
  * http://modestmaps.com/
@@ -1521,12 +1521,12 @@ if (typeof module !== 'undefined' && module.exports) {
  *
  */
 
-var previousMM = MM;
+ var previousMM = MM;
 
 // namespacing for backwards-compatibility
 if (!com) {
-    var com = {};
-    if (!com.modestmaps) com.modestmaps = {};
+  var com = {};
+  if (!com.modestmaps) com.modestmaps = {};
 }
 
 var MM = com.modestmaps = {
@@ -1539,12 +1539,12 @@ var MM = com.modestmaps = {
 (function(MM) {
     // Make inheritance bearable: clone one level of properties
     MM.extend = function(child, parent) {
-        for (var property in parent.prototype) {
-            if (typeof child.prototype[property] == "undefined") {
-                child.prototype[property] = parent.prototype[property];
-            }
+      for (var property in parent.prototype) {
+        if (typeof child.prototype[property] == "undefined") {
+          child.prototype[property] = parent.prototype[property];
         }
-        return child;
+      }
+      return child;
     };
 
     MM.getFrame = function () {
@@ -1557,58 +1557,58 @@ var MM = com.modestmaps = {
         // perhaps we should namespace an alias onto window instead? 
         // e.g. window.mmRequestAnimationFrame?
         return function(callback) {
-            (window.requestAnimationFrame  ||
+          (window.requestAnimationFrame  ||
             window.webkitRequestAnimationFrame ||
             window.mozRequestAnimationFrame    ||
             window.oRequestAnimationFrame      ||
             window.msRequestAnimationFrame     ||
             function (callback) {
-                window.setTimeout(function () {
-                    callback(+new Date());
-                }, 10);
+              window.setTimeout(function () {
+                callback(+new Date());
+              }, 10);
             })(callback);
-        };
-    }();
+          };
+        }();
 
     // Inspired by LeafletJS
     MM.transformProperty = (function(props) {
         if (!this.document) return; // node.js safety
         var style = document.documentElement.style;
         for (var i = 0; i < props.length; i++) {
-            if (props[i] in style) {
-                return props[i];
-            }
+          if (props[i] in style) {
+            return props[i];
+          }
         }
         return false;
-    })(['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
+      })(['transform', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']);
 
-    MM.matrixString = function(point) {
+      MM.matrixString = function(point) {
         // Make the result of point.scale * point.width a whole number.
         if (point.scale * point.width % 1) {
-            point.scale += (1 - point.scale * point.width % 1) / point.width;
+          point.scale += (1 - point.scale * point.width % 1) / point.width;
         }
 
         var scale = point.scale || 1;
         if (MM._browser.webkit3d) {
-            return  'translate3d(' +
-                point.x.toFixed(0) + 'px,' + point.y.toFixed(0) + 'px, 0px)' +
-                'scale3d(' + scale + ',' + scale + ', 1)';
-        } else {
-            return  'translate(' +
-                point.x.toFixed(6) + 'px,' + point.y.toFixed(6) + 'px)' +
-                'scale(' + scale + ',' + scale + ')';
-        }
-    };
+          return  'translate3d(' +
+            point.x.toFixed(0) + 'px,' + point.y.toFixed(0) + 'px, 0px)' +
+'scale3d(' + scale + ',' + scale + ', 1)';
+} else {
+  return  'translate(' +
+    point.x.toFixed(6) + 'px,' + point.y.toFixed(6) + 'px)' +
+'scale(' + scale + ',' + scale + ')';
+}
+};
 
-    MM._browser = (function(window) {
-        return {
-            webkit: ('WebKitCSSMatrix' in window),
-            webkit3d: ('WebKitCSSMatrix' in window) && ('m11' in new WebKitCSSMatrix())
-        };
+MM._browser = (function(window) {
+  return {
+    webkit: ('WebKitCSSMatrix' in window),
+    webkit3d: ('WebKitCSSMatrix' in window) && ('m11' in new WebKitCSSMatrix())
+  };
     })(this); // use this for node.js global
 
     MM.moveElement = function(el, point) {
-        if (MM.transformProperty) {
+      if (MM.transformProperty) {
             // Optimize for identity transforms, where you don't actually
             // need to change this element's string. Browsers can optimize for
             // the .style.left case but not for this CSS case.
@@ -1617,20 +1617,20 @@ var MM = com.modestmaps = {
             if (!point.height) point.height = 0;
             var ms = MM.matrixString(point);
             if (el[MM.transformProperty] !== ms) {
-                el.style[MM.transformProperty] =
-                    el[MM.transformProperty] = ms;
+              el.style[MM.transformProperty] =
+              el[MM.transformProperty] = ms;
             }
-        } else {
+          } else {
             el.style.left = point.x + 'px';
             el.style.top = point.y + 'px';
             // Don't set width unless asked to: this is performance-intensive
             // and not always necessary
             if (point.width && point.height && point.scale) {
-                el.style.width =  Math.ceil(point.width  * point.scale) + 'px';
-                el.style.height = Math.ceil(point.height * point.scale) + 'px';
+              el.style.width =  Math.ceil(point.width  * point.scale) + 'px';
+              el.style.height = Math.ceil(point.height * point.scale) + 'px';
             }
-        }
-    };
+          }
+        };
 
     // Events
     // Cancel an event: prevent it from bubbling
@@ -1642,83 +1642,83 @@ var MM = com.modestmaps = {
         if (e.stopPropagation) { e.stopPropagation(); }
         if (e.preventDefault) { e.preventDefault(); }
         return false;
-    };
+      };
 
-    MM.coerceLayer = function(layerish) {
+      MM.coerceLayer = function(layerish) {
         if (typeof layerish == 'string') {
             // Probably a template string
             return new MM.Layer(new MM.TemplatedLayer(layerish));
-        } else if ('draw' in layerish && typeof layerish.draw == 'function') {
+          } else if ('draw' in layerish && typeof layerish.draw == 'function') {
             // good enough, though we should probably enforce .parent and .destroy() too
             return layerish;
-        } else {
+          } else {
             // probably a MapProvider
             return new MM.Layer(layerish);
-        }
-    };
+          }
+        };
 
     // see http://ejohn.org/apps/jselect/event.html for the originals
     MM.addEvent = function(obj, type, fn) {
-        if (obj.addEventListener) {
-            obj.addEventListener(type, fn, false);
-            if (type == 'mousewheel') {
-                obj.addEventListener('DOMMouseScroll', fn, false);
-            }
-        } else if (obj.attachEvent) {
-            obj['e'+type+fn] = fn;
-            obj[type+fn] = function(){ obj['e'+type+fn](window.event); };
-            obj.attachEvent('on'+type, obj[type+fn]);
+      if (obj.addEventListener) {
+        obj.addEventListener(type, fn, false);
+        if (type == 'mousewheel') {
+          obj.addEventListener('DOMMouseScroll', fn, false);
         }
+      } else if (obj.attachEvent) {
+        obj['e'+type+fn] = fn;
+        obj[type+fn] = function(){ obj['e'+type+fn](window.event); };
+        obj.attachEvent('on'+type, obj[type+fn]);
+      }
     };
 
     MM.removeEvent = function( obj, type, fn ) {
-        if (obj.removeEventListener) {
-            obj.removeEventListener(type, fn, false);
-            if (type == 'mousewheel') {
-                obj.removeEventListener('DOMMouseScroll', fn, false);
-            }
-        } else if (obj.detachEvent) {
-            obj.detachEvent('on'+type, obj[type+fn]);
-            obj[type+fn] = null;
+      if (obj.removeEventListener) {
+        obj.removeEventListener(type, fn, false);
+        if (type == 'mousewheel') {
+          obj.removeEventListener('DOMMouseScroll', fn, false);
         }
+      } else if (obj.detachEvent) {
+        obj.detachEvent('on'+type, obj[type+fn]);
+        obj[type+fn] = null;
+      }
     };
 
     // Cross-browser function to get current element style property
     MM.getStyle = function(el,styleProp) {
-        if (el.currentStyle)
-            return el.currentStyle[styleProp];
-        else if (window.getComputedStyle)
-            return document.defaultView.getComputedStyle(el,null).getPropertyValue(styleProp);
+      if (el.currentStyle)
+        return el.currentStyle[styleProp];
+      else if (window.getComputedStyle)
+        return document.defaultView.getComputedStyle(el,null).getPropertyValue(styleProp);
     };
     // Point
     MM.Point = function(x, y) {
-        this.x = parseFloat(x);
-        this.y = parseFloat(y);
+      this.x = parseFloat(x);
+      this.y = parseFloat(y);
     };
 
     MM.Point.prototype = {
-        x: 0,
-        y: 0,
-        toString: function() {
-            return "(" + this.x.toFixed(3) + ", " + this.y.toFixed(3) + ")";
-        },
-        copy: function() {
-            return new MM.Point(this.x, this.y);
-        }
+      x: 0,
+      y: 0,
+      toString: function() {
+        return "(" + this.x.toFixed(3) + ", " + this.y.toFixed(3) + ")";
+      },
+      copy: function() {
+        return new MM.Point(this.x, this.y);
+      }
     };
 
     // Get the euclidean distance between two points
     MM.Point.distance = function(p1, p2) {
-        return Math.sqrt(
-            Math.pow(p2.x - p1.x, 2) +
-            Math.pow(p2.y - p1.y, 2));
+      return Math.sqrt(
+        Math.pow(p2.x - p1.x, 2) +
+        Math.pow(p2.y - p1.y, 2));
     };
 
     // Get a point between two other points, biased by `t`.
     MM.Point.interpolate = function(p1, p2, t) {
-        return new MM.Point(
-            p1.x + (p2.x - p1.x) * t,
-            p1.y + (p2.y - p1.y) * t);
+      return new MM.Point(
+        p1.x + (p2.x - p1.x) * t,
+        p1.y + (p2.y - p1.y) * t);
     };
     // Coordinate
     // ----------
@@ -1727,22 +1727,22 @@ var MM = com.modestmaps = {
     // `zoom` can be floating-point numbers, and the `container()` function
     // can be used to find the actual tile that contains the point.
     MM.Coordinate = function(row, column, zoom) {
-        this.row = row;
-        this.column = column;
-        this.zoom = zoom;
+      this.row = row;
+      this.column = column;
+      this.zoom = zoom;
     };
 
     MM.Coordinate.prototype = {
 
-        row: 0,
-        column: 0,
-        zoom: 0,
+      row: 0,
+      column: 0,
+      zoom: 0,
 
-        toString: function() {
-            return "("  + this.row.toFixed(3) +
-                   ", " + this.column.toFixed(3) +
-                   " @" + this.zoom.toFixed(3) + ")";
-        },
+      toString: function() {
+        return "("  + this.row.toFixed(3) +
+         ", " + this.column.toFixed(3) +
+         " @" + this.zoom.toFixed(3) + ")";
+},
         // Quickly generate a string representation of this coordinate to
         // index it in hashes. 
         toKey: function() {
@@ -1751,71 +1751,71 @@ var MM = com.modestmaps = {
             // row or column are negative and check thoroughly (exhaustively) before
             // committing.
             return this.zoom + ',' + this.row + ',' + this.column;
-        },
+          },
         // Clone this object.
         copy: function() {
-            return new MM.Coordinate(this.row, this.column, this.zoom);
+          return new MM.Coordinate(this.row, this.column, this.zoom);
         },
         // Get the actual, rounded-number tile that contains this point.
         container: function() {
             // using floor here (not parseInt, ~~) because we want -0.56 --> -1
             return new MM.Coordinate(Math.floor(this.row),
-                                     Math.floor(this.column),
-                                     Math.floor(this.zoom));
-        },
+             Math.floor(this.column),
+             Math.floor(this.zoom));
+          },
         // Recalculate this Coordinate at a different zoom level and return the
         // new object.
         zoomTo: function(destination) {
-            var power = Math.pow(2, destination - this.zoom);
-            return new MM.Coordinate(this.row * power,
-                                     this.column * power,
-                                     destination);
+          var power = Math.pow(2, destination - this.zoom);
+          return new MM.Coordinate(this.row * power,
+           this.column * power,
+           destination);
         },
         // Recalculate this Coordinate at a different relative zoom level and return the
         // new object.
         zoomBy: function(distance) {
-            var power = Math.pow(2, distance);
-            return new MM.Coordinate(this.row * power,
-                                     this.column * power,
-                                     this.zoom + distance);
+          var power = Math.pow(2, distance);
+          return new MM.Coordinate(this.row * power,
+           this.column * power,
+           this.zoom + distance);
         },
         // Move this coordinate up by `dist` coordinates
         up: function(dist) {
-            if (dist === undefined) dist = 1;
-            return new MM.Coordinate(this.row - dist, this.column, this.zoom);
+          if (dist === undefined) dist = 1;
+          return new MM.Coordinate(this.row - dist, this.column, this.zoom);
         },
         // Move this coordinate right by `dist` coordinates
         right: function(dist) {
-            if (dist === undefined) dist = 1;
-            return new MM.Coordinate(this.row, this.column + dist, this.zoom);
+          if (dist === undefined) dist = 1;
+          return new MM.Coordinate(this.row, this.column + dist, this.zoom);
         },
         // Move this coordinate down by `dist` coordinates
         down: function(dist) {
-            if (dist === undefined) dist = 1;
-            return new MM.Coordinate(this.row + dist, this.column, this.zoom);
+          if (dist === undefined) dist = 1;
+          return new MM.Coordinate(this.row + dist, this.column, this.zoom);
         },
         // Move this coordinate left by `dist` coordinates
         left: function(dist) {
-            if (dist === undefined) dist = 1;
-            return new MM.Coordinate(this.row, this.column - dist, this.zoom);
+          if (dist === undefined) dist = 1;
+          return new MM.Coordinate(this.row, this.column - dist, this.zoom);
         }
-    };
+      };
     // Location
     // --------
     MM.Location = function(lat, lon) {
-        this.lat = parseFloat(lat);
-        this.lon = parseFloat(lon);
+      this.lat = parseFloat(lat);
+      this.lon = parseFloat(lon);
     };
 
     MM.Location.prototype = {
-        lat: 0,
-        lon: 0,
-        toString: function() {
-            return "(" + this.lat.toFixed(3) + ", " + this.lon.toFixed(3) + ")";
-        },
-        copy: function() {
-            return new MM.Location(this.lat, this.lon);
-        }
+      lat: 0,
+      lon: 0,
+      toString: function() {
+        return "(" + this.lat.toFixed(3) + ", " + this.lon.toFixed(3) + ")";
+      },
+      copy: function() {
+        return new MM.Location(this.lat, this.lon);
+      }
     };
 
     // returns approximate distance between start and end locations
@@ -1833,102 +1833,102 @@ var MM = com.modestmaps = {
     //
     // see [Formula and code for calculating distance based on two lat/lon locations](http://jan.ucc.nau.edu/~cvm/latlon_formula.html)
     MM.Location.distance = function(l1, l2, r) {
-        if (!r) {
+      if (!r) {
             // default to meters
             r = 6378000;
-        }
-        var deg2rad = Math.PI / 180.0,
-            a1 = l1.lat * deg2rad,
-            b1 = l1.lon * deg2rad,
-            a2 = l2.lat * deg2rad,
-            b2 = l2.lon * deg2rad,
-            c = Math.cos(a1) * Math.cos(b1) * Math.cos(a2) * Math.cos(b2),
-            d = Math.cos(a1) * Math.sin(b1) * Math.cos(a2) * Math.sin(b2),
-            e = Math.sin(a1) * Math.sin(a2);
-        return Math.acos(c + d + e) * r;
-    };
+          }
+          var deg2rad = Math.PI / 180.0,
+          a1 = l1.lat * deg2rad,
+          b1 = l1.lon * deg2rad,
+          a2 = l2.lat * deg2rad,
+          b2 = l2.lon * deg2rad,
+          c = Math.cos(a1) * Math.cos(b1) * Math.cos(a2) * Math.cos(b2),
+          d = Math.cos(a1) * Math.sin(b1) * Math.cos(a2) * Math.sin(b2),
+          e = Math.sin(a1) * Math.sin(a2);
+          return Math.acos(c + d + e) * r;
+        };
 
     // Interpolates along a great circle, f between 0 and 1
     //
     // * FIXME: could be heavily optimized (lots of trig calls to cache)
     // * FIXME: could be inmproved for calculating a full path
     MM.Location.interpolate = function(l1, l2, f) {
-        if (l1.lat === l2.lat && l1.lon === l2.lon) {
-            return new MM.Location(l1.lat, l1.lon);
-        }
-        var deg2rad = Math.PI / 180.0,
-            lat1 = l1.lat * deg2rad,
-            lon1 = l1.lon * deg2rad,
-            lat2 = l2.lat * deg2rad,
-            lon2 = l2.lon * deg2rad;
+      if (l1.lat === l2.lat && l1.lon === l2.lon) {
+        return new MM.Location(l1.lat, l1.lon);
+      }
+      var deg2rad = Math.PI / 180.0,
+      lat1 = l1.lat * deg2rad,
+      lon1 = l1.lon * deg2rad,
+      lat2 = l2.lat * deg2rad,
+      lon2 = l2.lon * deg2rad;
 
-        var d = 2 * Math.asin(
-            Math.sqrt(
-              Math.pow(Math.sin((lat1 - lat2) / 2), 2) +
-              Math.cos(lat1) * Math.cos(lat2) *
-              Math.pow(Math.sin((lon1 - lon2) / 2), 2)));
+      var d = 2 * Math.asin(
+        Math.sqrt(
+          Math.pow(Math.sin((lat1 - lat2) / 2), 2) +
+          Math.cos(lat1) * Math.cos(lat2) *
+          Math.pow(Math.sin((lon1 - lon2) / 2), 2)));
 
-        var A = Math.sin((1-f)*d)/Math.sin(d);
-        var B = Math.sin(f*d)/Math.sin(d);
-        var x = A * Math.cos(lat1) * Math.cos(lon1) +
-          B * Math.cos(lat2) * Math.cos(lon2);
-        var y = A * Math.cos(lat1) * Math.sin(lon1) +
-          B * Math.cos(lat2) * Math.sin(lon2);
-        var z = A * Math.sin(lat1) + B * Math.sin(lat2);
+      var A = Math.sin((1-f)*d)/Math.sin(d);
+      var B = Math.sin(f*d)/Math.sin(d);
+      var x = A * Math.cos(lat1) * Math.cos(lon1) +
+      B * Math.cos(lat2) * Math.cos(lon2);
+      var y = A * Math.cos(lat1) * Math.sin(lon1) +
+      B * Math.cos(lat2) * Math.sin(lon2);
+      var z = A * Math.sin(lat1) + B * Math.sin(lat2);
 
-        var latN = Math.atan2(z, Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
-        var lonN = Math.atan2(y,x);
+      var latN = Math.atan2(z, Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2)));
+      var lonN = Math.atan2(y,x);
 
-        return new MM.Location(latN / deg2rad, lonN / deg2rad);
+      return new MM.Location(latN / deg2rad, lonN / deg2rad);
     };
     
     // Returns bearing from one point to another
     //
     // * FIXME: bearing is not constant along significant great circle arcs.
     MM.Location.bearing = function(l1, l2) {
-        var deg2rad = Math.PI / 180.0,
-            lat1 = l1.lat * deg2rad,
-            lon1 = l1.lon * deg2rad,
-            lat2 = l2.lat * deg2rad,
-            lon2 = l2.lon * deg2rad;
-        var result = Math.atan2(
-            Math.sin(lon1 - lon2) *
-            Math.cos(lat2),
-            Math.cos(lat1) *
-            Math.sin(lat2) -
-            Math.sin(lat1) *
-            Math.cos(lat2) *
-            Math.cos(lon1 - lon2)
+      var deg2rad = Math.PI / 180.0,
+      lat1 = l1.lat * deg2rad,
+      lon1 = l1.lon * deg2rad,
+      lat2 = l2.lat * deg2rad,
+      lon2 = l2.lon * deg2rad;
+      var result = Math.atan2(
+        Math.sin(lon1 - lon2) *
+        Math.cos(lat2),
+        Math.cos(lat1) *
+        Math.sin(lat2) -
+        Math.sin(lat1) *
+        Math.cos(lat2) *
+        Math.cos(lon1 - lon2)
         )  / -(Math.PI / 180);
 
         // map it into 0-360 range
         return (result < 0) ? result + 360 : result;
-    };
+      };
     // Extent
     // ----------
     // An object representing a map's rectangular extent, defined by its north,
     // south, east and west bounds.
 
     MM.Extent = function(north, west, south, east) {
-        if (north instanceof MM.Location &&
-            west instanceof MM.Location) {
-            var northwest = north,
-                southeast = west;
+      if (north instanceof MM.Location &&
+        west instanceof MM.Location) {
+        var northwest = north,
+      southeast = west;
 
-            north = northwest.lat;
-            west = northwest.lon;
-            south = southeast.lat;
-            east = southeast.lon;
-        }
-        if (isNaN(south)) south = north;
-        if (isNaN(east)) east = west;
-        this.north = Math.max(north, south);
-        this.south = Math.min(north, south);
-        this.east = Math.max(east, west);
-        this.west = Math.min(east, west);
-    };
+      north = northwest.lat;
+      west = northwest.lon;
+      south = southeast.lat;
+      east = southeast.lon;
+    }
+    if (isNaN(south)) south = north;
+    if (isNaN(east)) east = west;
+    this.north = Math.max(north, south);
+    this.south = Math.min(north, south);
+    this.east = Math.max(east, west);
+    this.west = Math.min(east, west);
+  };
 
-    MM.Extent.prototype = {
+  MM.Extent.prototype = {
         // boundary attributes
         north: 0,
         south: 0,
@@ -1936,142 +1936,142 @@ var MM = com.modestmaps = {
         west: 0,
 
         copy: function() {
-            return new MM.Extent(this.north, this.west, this.south, this.east);
+          return new MM.Extent(this.north, this.west, this.south, this.east);
         },
 
         toString: function(precision) {
-            if (isNaN(precision)) precision = 3;
-            return [
-                this.north.toFixed(precision),
-                this.west.toFixed(precision),
-                this.south.toFixed(precision),
-                this.east.toFixed(precision)
-            ].join(", ");
+          if (isNaN(precision)) precision = 3;
+          return [
+          this.north.toFixed(precision),
+          this.west.toFixed(precision),
+          this.south.toFixed(precision),
+          this.east.toFixed(precision)
+          ].join(", ");
         },
 
         // getters for the corner locations
         northWest: function() {
-            return new MM.Location(this.north, this.west);
+          return new MM.Location(this.north, this.west);
         },
         southEast: function() {
-            return new MM.Location(this.south, this.east);
+          return new MM.Location(this.south, this.east);
         },
         northEast: function() {
-            return new MM.Location(this.north, this.east);
+          return new MM.Location(this.north, this.east);
         },
         southWest: function() {
-            return new MM.Location(this.south, this.west);
+          return new MM.Location(this.south, this.west);
         },
         // getter for the center location
         center: function() {
-            return new MM.Location(
-                this.south + (this.north - this.south) / 2,
-                this.east + (this.west - this.east) / 2
+          return new MM.Location(
+            this.south + (this.north - this.south) / 2,
+            this.east + (this.west - this.east) / 2
             );
         },
 
         // extend the bounds to include a location's latitude and longitude
         encloseLocation: function(loc) {
-            if (loc.lat > this.north) this.north = loc.lat;
-            if (loc.lat < this.south) this.south = loc.lat;
-            if (loc.lon > this.east) this.east = loc.lon;
-            if (loc.lon < this.west) this.west = loc.lon;
+          if (loc.lat > this.north) this.north = loc.lat;
+          if (loc.lat < this.south) this.south = loc.lat;
+          if (loc.lon > this.east) this.east = loc.lon;
+          if (loc.lon < this.west) this.west = loc.lon;
         },
 
         // extend the bounds to include multiple locations
         encloseLocations: function(locations) {
-            var len = locations.length;
-            for (var i = 0; i < len; i++) {
-                this.encloseLocation(locations[i]);
-            }
+          var len = locations.length;
+          for (var i = 0; i < len; i++) {
+            this.encloseLocation(locations[i]);
+          }
         },
 
         // reset bounds from a list of locations
         setFromLocations: function(locations) {
-            var len = locations.length,
-                first = locations[0];
-            this.north = this.south = first.lat;
-            this.east = this.west = first.lon;
-            for (var i = 1; i < len; i++) {
-                this.encloseLocation(locations[i]);
-            }
+          var len = locations.length,
+          first = locations[0];
+          this.north = this.south = first.lat;
+          this.east = this.west = first.lon;
+          for (var i = 1; i < len; i++) {
+            this.encloseLocation(locations[i]);
+          }
         },
 
         // extend the bounds to include another extent
         encloseExtent: function(extent) {
-            if (extent.north > this.north) this.north = extent.north;
-            if (extent.south < this.south) this.south = extent.south;
-            if (extent.east > this.east) this.east = extent.east;
-            if (extent.west < this.west) this.west = extent.west;
+          if (extent.north > this.north) this.north = extent.north;
+          if (extent.south < this.south) this.south = extent.south;
+          if (extent.east > this.east) this.east = extent.east;
+          if (extent.west < this.west) this.west = extent.west;
         },
 
         // determine if a location is within this extent
         containsLocation: function(loc) {
-            return loc.lat >= this.south &&
-                loc.lat <= this.north &&
-                loc.lon >= this.west &&
-                loc.lon <= this.east;
+          return loc.lat >= this.south &&
+          loc.lat <= this.north &&
+          loc.lon >= this.west &&
+          loc.lon <= this.east;
         },
 
         // turn an extent into an array of locations containing its northwest
         // and southeast corners (used in MM.Map.setExtent())
         toArray: function() {
-            return [this.northWest(), this.southEast()];
+          return [this.northWest(), this.southEast()];
         }
-    };
+      };
 
-    MM.Extent.fromString = function(str) {
+      MM.Extent.fromString = function(str) {
         var parts = str.split(/\s*,\s*/);
         if (parts.length != 4) {
-            throw "Invalid extent string (expecting 4 comma-separated numbers)";
+          throw "Invalid extent string (expecting 4 comma-separated numbers)";
         }
         return new MM.Extent(
-            parseFloat(parts[0]),
-            parseFloat(parts[1]),
-            parseFloat(parts[2]),
-            parseFloat(parts[3])
-        );
-    };
+          parseFloat(parts[0]),
+          parseFloat(parts[1]),
+          parseFloat(parts[2]),
+          parseFloat(parts[3])
+          );
+      };
 
-    MM.Extent.fromArray = function(locations) {
+      MM.Extent.fromArray = function(locations) {
         var extent = new MM.Extent();
         extent.setFromLocations(locations);
         return extent;
-    };
+      };
 
     // Transformation
     // --------------
     MM.Transformation = function(ax, bx, cx, ay, by, cy) {
-        this.ax = ax;
-        this.bx = bx;
-        this.cx = cx;
-        this.ay = ay;
-        this.by = by;
-        this.cy = cy;
+      this.ax = ax;
+      this.bx = bx;
+      this.cx = cx;
+      this.ay = ay;
+      this.by = by;
+      this.cy = cy;
     };
 
     MM.Transformation.prototype = {
 
-        ax: 0,
-        bx: 0,
-        cx: 0,
-        ay: 0,
-        by: 0,
-        cy: 0,
+      ax: 0,
+      bx: 0,
+      cx: 0,
+      ay: 0,
+      by: 0,
+      cy: 0,
 
-        transform: function(point) {
-            return new MM.Point(this.ax * point.x + this.bx * point.y + this.cx,
-                                this.ay * point.x + this.by * point.y + this.cy);
-        },
+      transform: function(point) {
+        return new MM.Point(this.ax * point.x + this.bx * point.y + this.cx,
+          this.ay * point.x + this.by * point.y + this.cy);
+      },
 
-        untransform: function(point) {
-            return new MM.Point((point.x * this.by - point.y * this.bx -
-                               this.cx * this.by + this.cy * this.bx) /
-                              (this.ax * this.by - this.ay * this.bx),
-                              (point.x * this.ay - point.y * this.ax -
-                               this.cx * this.ay + this.cy * this.ax) /
-                              (this.bx * this.ay - this.by * this.ax));
-        }
+      untransform: function(point) {
+        return new MM.Point((point.x * this.by - point.y * this.bx -
+         this.cx * this.by + this.cy * this.bx) /
+        (this.ax * this.by - this.ay * this.bx),
+        (point.x * this.ay - point.y * this.ax -
+         this.cx * this.ay + this.cy * this.ax) /
+        (this.bx * this.ay - this.by * this.ax));
+      }
 
     };
 
@@ -2079,15 +2079,15 @@ var MM = com.modestmaps = {
     // Generates a transform based on three pairs of points,
     // a1 -> a2, b1 -> b2, c1 -> c2.
     MM.deriveTransformation = function(a1x, a1y, a2x, a2y,
-                                       b1x, b1y, b2x, b2y,
-                                       c1x, c1y, c2x, c2y) {
-        var x = MM.linearSolution(a1x, a1y, a2x,
-                                  b1x, b1y, b2x,
-                                  c1x, c1y, c2x);
-        var y = MM.linearSolution(a1x, a1y, a2y,
-                                  b1x, b1y, b2y,
-                                  c1x, c1y, c2y);
-        return new MM.Transformation(x[0], x[1], x[2], y[0], y[1], y[2]);
+     b1x, b1y, b2x, b2y,
+     c1x, c1y, c2x, c2y) {
+      var x = MM.linearSolution(a1x, a1y, a2x,
+        b1x, b1y, b2x,
+        c1x, c1y, c2x);
+      var y = MM.linearSolution(a1x, a1y, a2y,
+        b1x, b1y, b2y,
+        c1x, c1y, c2y);
+      return new MM.Transformation(x[0], x[1], x[2], y[0], y[1], y[2]);
     };
 
     // Solves a system of linear equations.
@@ -2112,84 +2112,84 @@ var MM = com.modestmaps = {
         t3 = parseFloat(t3);
 
         var a = (((t2 - t3) * (s1 - s2)) - ((t1 - t2) * (s2 - s3))) /
-              (((r2 - r3) * (s1 - s2)) - ((r1 - r2) * (s2 - s3)));
+        (((r2 - r3) * (s1 - s2)) - ((r1 - r2) * (s2 - s3)));
 
         var b = (((t2 - t3) * (r1 - r2)) - ((t1 - t2) * (r2 - r3))) /
-              (((s2 - s3) * (r1 - r2)) - ((s1 - s2) * (r2 - r3)));
+        (((s2 - s3) * (r1 - r2)) - ((s1 - s2) * (r2 - r3)));
 
         var c = t1 - (r1 * a) - (s1 * b);
         return [ a, b, c ];
-    };
+      };
     // Projection
     // ----------
 
     // An abstract class / interface for projections
     MM.Projection = function(zoom, transformation) {
-        if (!transformation) {
-            transformation = new MM.Transformation(1, 0, 0, 0, 1, 0);
-        }
-        this.zoom = zoom;
-        this.transformation = transformation;
+      if (!transformation) {
+        transformation = new MM.Transformation(1, 0, 0, 0, 1, 0);
+      }
+      this.zoom = zoom;
+      this.transformation = transformation;
     };
 
     MM.Projection.prototype = {
 
-        zoom: 0,
-        transformation: null,
+      zoom: 0,
+      transformation: null,
 
-        rawProject: function(point) {
-            throw "Abstract method not implemented by subclass.";
-        },
+      rawProject: function(point) {
+        throw "Abstract method not implemented by subclass.";
+      },
 
-        rawUnproject: function(point) {
-            throw "Abstract method not implemented by subclass.";
-        },
+      rawUnproject: function(point) {
+        throw "Abstract method not implemented by subclass.";
+      },
 
-        project: function(point) {
-            point = this.rawProject(point);
-            if(this.transformation) {
-                point = this.transformation.transform(point);
-            }
-            return point;
-        },
-
-        unproject: function(point) {
-            if(this.transformation) {
-                point = this.transformation.untransform(point);
-            }
-            point = this.rawUnproject(point);
-            return point;
-        },
-
-        locationCoordinate: function(location) {
-            var point = new MM.Point(Math.PI * location.lon / 180.0,
-                                     Math.PI * location.lat / 180.0);
-            point = this.project(point);
-            return new MM.Coordinate(point.y, point.x, this.zoom);
-        },
-
-        coordinateLocation: function(coordinate) {
-            coordinate = coordinate.zoomTo(this.zoom);
-            var point = new MM.Point(coordinate.column, coordinate.row);
-            point = this.unproject(point);
-            return new MM.Location(180.0 * point.y / Math.PI,
-                                   180.0 * point.x / Math.PI);
+      project: function(point) {
+        point = this.rawProject(point);
+        if(this.transformation) {
+          point = this.transformation.transform(point);
         }
+        return point;
+      },
+
+      unproject: function(point) {
+        if(this.transformation) {
+          point = this.transformation.untransform(point);
+        }
+        point = this.rawUnproject(point);
+        return point;
+      },
+
+      locationCoordinate: function(location) {
+        var point = new MM.Point(Math.PI * location.lon / 180.0,
+         Math.PI * location.lat / 180.0);
+        point = this.project(point);
+        return new MM.Coordinate(point.y, point.x, this.zoom);
+      },
+
+      coordinateLocation: function(coordinate) {
+        coordinate = coordinate.zoomTo(this.zoom);
+        var point = new MM.Point(coordinate.column, coordinate.row);
+        point = this.unproject(point);
+        return new MM.Location(180.0 * point.y / Math.PI,
+         180.0 * point.x / Math.PI);
+      }
     };
 
     // A projection for equilateral maps, based on longitude and latitude
     MM.LinearProjection = function(zoom, transformation) {
-        MM.Projection.call(this, zoom, transformation);
+      MM.Projection.call(this, zoom, transformation);
     };
 
     // The Linear projection doesn't reproject points
     MM.LinearProjection.prototype = {
-        rawProject: function(point) {
-            return new MM.Point(point.x, point.y);
-        },
-        rawUnproject: function(point) {
-            return new MM.Point(point.x, point.y);
-        }
+      rawProject: function(point) {
+        return new MM.Point(point.x, point.y);
+      },
+      rawUnproject: function(point) {
+        return new MM.Point(point.x, point.y);
+      }
     };
 
     MM.extend(MM.LinearProjection, MM.Projection);
@@ -2197,19 +2197,19 @@ var MM = com.modestmaps = {
     MM.MercatorProjection = function(zoom, transformation) {
         // super!
         MM.Projection.call(this, zoom, transformation);
-    };
+      };
 
     // Project lon/lat points into meters required for Mercator
     MM.MercatorProjection.prototype = {
-        rawProject: function(point) {
-            return new MM.Point(point.x,
-                         Math.log(Math.tan(0.25 * Math.PI + 0.5 * point.y)));
-        },
+      rawProject: function(point) {
+        return new MM.Point(point.x,
+         Math.log(Math.tan(0.25 * Math.PI + 0.5 * point.y)));
+      },
 
-        rawUnproject: function(point) {
-            return new MM.Point(point.x,
-                    2 * Math.atan(Math.pow(Math.E, point.y)) - 0.5 * Math.PI);
-        }
+      rawUnproject: function(point) {
+        return new MM.Point(point.x,
+          2 * Math.atan(Math.pow(Math.E, point.y)) - 0.5 * Math.PI);
+      }
     };
 
     MM.extend(MM.MercatorProjection, MM.Projection);
@@ -2221,9 +2221,9 @@ var MM = com.modestmaps = {
     //   Template
     //
     MM.MapProvider = function(getTile) {
-        if (getTile) {
-            this.getTile = getTile;
-        }
+      if (getTile) {
+        this.getTile = getTile;
+      }
     };
 
     MM.MapProvider.prototype = {
@@ -2234,15 +2234,15 @@ var MM = com.modestmaps = {
         tileLimits: [
             new MM.Coordinate(0,0,0),             // top left outer
             new MM.Coordinate(1,1,0).zoomTo(18)   // bottom right inner
-        ],
+            ],
 
-        getTileUrl: function(coordinate) {
-            throw "Abstract method not implemented by subclass.";
-        },
+            getTileUrl: function(coordinate) {
+              throw "Abstract method not implemented by subclass.";
+            },
 
-        getTile: function(coordinate) {
-            throw "Abstract method not implemented by subclass.";
-        },
+            getTile: function(coordinate) {
+              throw "Abstract method not implemented by subclass.";
+            },
 
         // releaseTile is not required
         releaseTile: function(element) { },
@@ -2250,35 +2250,35 @@ var MM = com.modestmaps = {
         // use this to tell MapProvider that tiles only exist between certain zoom levels.
         // should be set separately on Map to restrict interactive zoom/pan ranges
         setZoomRange: function(minZoom, maxZoom) {
-            this.tileLimits[0] = this.tileLimits[0].zoomTo(minZoom);
-            this.tileLimits[1] = this.tileLimits[1].zoomTo(maxZoom);
+          this.tileLimits[0] = this.tileLimits[0].zoomTo(minZoom);
+          this.tileLimits[1] = this.tileLimits[1].zoomTo(maxZoom);
         },
 
         // wrap column around the world if necessary
         // return null if wrapped coordinate is outside of the tile limits
         sourceCoordinate: function(coord) {
-            var TL = this.tileLimits[0].zoomTo(coord.zoom).container(),
-                BR = this.tileLimits[1].zoomTo(coord.zoom),
-                columnSize = Math.pow(2, coord.zoom),
-                wrappedColumn;
+          var TL = this.tileLimits[0].zoomTo(coord.zoom).container(),
+          BR = this.tileLimits[1].zoomTo(coord.zoom),
+          columnSize = Math.pow(2, coord.zoom),
+          wrappedColumn;
 
-            BR = new MM.Coordinate(Math.ceil(BR.row), Math.ceil(BR.column), Math.floor(BR.zoom));
+          BR = new MM.Coordinate(Math.ceil(BR.row), Math.ceil(BR.column), Math.floor(BR.zoom));
 
-            if (coord.column < 0) {
-                wrappedColumn = ((coord.column % columnSize) + columnSize) % columnSize;
-            } else {
-                wrappedColumn = coord.column % columnSize;
-            }
+          if (coord.column < 0) {
+            wrappedColumn = ((coord.column % columnSize) + columnSize) % columnSize;
+          } else {
+            wrappedColumn = coord.column % columnSize;
+          }
 
-            if (coord.row < TL.row || coord.row >= BR.row) {
-                return null;
-            } else if (wrappedColumn < TL.column || wrappedColumn >= BR.column) {
-                return null;
-            } else {
-                return new MM.Coordinate(coord.row, wrappedColumn, coord.zoom);
-            }
+          if (coord.row < TL.row || coord.row >= BR.row) {
+            return null;
+          } else if (wrappedColumn < TL.column || wrappedColumn >= BR.column) {
+            return null;
+          } else {
+            return new MM.Coordinate(coord.row, wrappedColumn, coord.zoom);
+          }
         }
-    };
+      };
 
     /**
      * FIXME: need a better explanation here! This is a pretty crucial part of
@@ -2303,65 +2303,65 @@ var MM = com.modestmaps = {
      * var placeholder = new MM.TemplatedMapProvider("http://placehold.it/256/f0f/fff.png&text={Z}/{X}/{Y}");
      *
      */
-    MM.Template = function(template, subdomains) {
-        var isQuadKey = template.match(/{(Q|quadkey)}/);
+     MM.Template = function(template, subdomains) {
+      var isQuadKey = template.match(/{(Q|quadkey)}/);
         // replace Microsoft style substitution strings
         if (isQuadKey) template = template
-            .replace('{subdomains}', '{S}')
-            .replace('{zoom}', '{Z}')
-            .replace('{quadkey}', '{Q}');
+          .replace('{subdomains}', '{S}')
+        .replace('{zoom}', '{Z}')
+        .replace('{quadkey}', '{Q}');
 
         var hasSubdomains = (subdomains &&
-            subdomains.length && template.indexOf("{S}") >= 0);
+          subdomains.length && template.indexOf("{S}") >= 0);
 
         function quadKey (row, column, zoom) {
-            var key = '';
-            for (var i = 1; i <= zoom; i++) {
-                key += (((row >> zoom - i) & 1) << 1) | ((column >> zoom - i) & 1);
-            }
-            return key || '0';
+          var key = '';
+          for (var i = 1; i <= zoom; i++) {
+            key += (((row >> zoom - i) & 1) << 1) | ((column >> zoom - i) & 1);
+          }
+          return key || '0';
         }
 
         var getTileUrl = function(coordinate) {
-            var coord = this.sourceCoordinate(coordinate);
-            if (!coord) {
-                return null;
-            }
-            var base = template;
-            if (hasSubdomains) {
-                var index = parseInt(coord.zoom + coord.row + coord.column, 10) %
-                    subdomains.length;
-                base = base.replace('{S}', subdomains[index]);
-            }
-            if (isQuadKey) {
-                return base
-                    .replace('{Z}', coord.zoom.toFixed(0))
-                    .replace('{Q}', quadKey(coord.row,
-                        coord.column,
-                        coord.zoom));
-            } else {
-                return base
-                    .replace('{Z}', coord.zoom.toFixed(0))
-                    .replace('{X}', coord.column.toFixed(0))
-                    .replace('{Y}', coord.row.toFixed(0));
-            }
+          var coord = this.sourceCoordinate(coordinate);
+          if (!coord) {
+            return null;
+          }
+          var base = template;
+          if (hasSubdomains) {
+            var index = parseInt(coord.zoom + coord.row + coord.column, 10) %
+            subdomains.length;
+            base = base.replace('{S}', subdomains[index]);
+          }
+          if (isQuadKey) {
+            return base
+            .replace('{Z}', coord.zoom.toFixed(0))
+            .replace('{Q}', quadKey(coord.row,
+              coord.column,
+              coord.zoom));
+          } else {
+            return base
+            .replace('{Z}', coord.zoom.toFixed(0))
+            .replace('{X}', coord.column.toFixed(0))
+            .replace('{Y}', coord.row.toFixed(0));
+          }
         };
 
         MM.MapProvider.call(this, getTileUrl);
-    };
+      };
 
-    MM.Template.prototype = {
+      MM.Template.prototype = {
         // quadKey generator
         getTile: function(coord) {
           return this.getTileUrl(coord);
         }
-    };
+      };
 
-    MM.extend(MM.Template, MM.MapProvider);
+      MM.extend(MM.Template, MM.MapProvider);
 
-    MM.TemplatedLayer = function(template, subdomains, name) {
-      return new MM.Layer(new MM.Template(template, subdomains), null, name);
-    };
+      MM.TemplatedLayer = function(template, subdomains, name) {
+        return new MM.Layer(new MM.Template(template, subdomains), null, name);
+      };
     // Event Handlers
     // --------------
 
@@ -2377,47 +2377,47 @@ var MM = com.modestmaps = {
 
         // correct for nested offsets in DOM
         for (var node = map.parent; node; node = node.offsetParent) {
-            point.x -= node.offsetLeft;
-            point.y -= node.offsetTop;
+          point.x -= node.offsetLeft;
+          point.y -= node.offsetTop;
         }
         return point;
-    };
+      };
 
-    MM.MouseWheelHandler = function() {
+      MM.MouseWheelHandler = function() {
         var handler = {},
-            map,
-            _zoomDiv,
-            prevTime,
-            precise = false;
+        map,
+        _zoomDiv,
+        prevTime,
+        precise = false;
 
         function mouseWheel(e) {
-            var delta = 0;
-            prevTime = prevTime || new Date().getTime();
+          var delta = 0;
+          prevTime = prevTime || new Date().getTime();
 
-            try {
-                _zoomDiv.scrollTop = 1000;
-                _zoomDiv.dispatchEvent(e);
-                delta = 1000 - _zoomDiv.scrollTop;
-            } catch (error) {
-                delta = e.wheelDelta || (-e.detail * 5);
-            }
+          try {
+            _zoomDiv.scrollTop = 1000;
+            _zoomDiv.dispatchEvent(e);
+            delta = 1000 - _zoomDiv.scrollTop;
+          } catch (error) {
+            delta = e.wheelDelta || (-e.detail * 5);
+          }
 
             // limit mousewheeling to once every 200ms
             var timeSince = new Date().getTime() - prevTime;
             var point = MM.getMousePoint(e, map);
 
             if (Math.abs(delta) > 0 && (timeSince > 200) && !precise) {
-                map.zoomByAbout(delta > 0 ? 1 : -1, point);
-                prevTime = new Date().getTime();
+              map.zoomByAbout(delta > 0 ? 1 : -1, point);
+              prevTime = new Date().getTime();
             } else if (precise) {
-                map.zoomByAbout(delta * 0.001, point);
+              map.zoomByAbout(delta * 0.001, point);
             }
 
             // Cancel the event so that the page doesn't scroll
             return MM.cancelEvent(e);
-        }
+          }
 
-        handler.init = function(x) {
+          handler.init = function(x) {
             map = x;
             _zoomDiv = document.body.appendChild(document.createElement('div'));
             _zoomDiv.style.cssText = 'visibility:hidden;top:0;height:0;width:0;overflow-y:scroll';
@@ -2425,204 +2425,204 @@ var MM = com.modestmaps = {
             innerDiv.style.height = '2000px';
             MM.addEvent(map.parent, 'mousewheel', mouseWheel);
             return handler;
-        };
+          };
 
-        handler.precise = function(x) {
+          handler.precise = function(x) {
             if (!arguments.length) return precise;
             precise = x;
             return handler;
-        };
+          };
 
-        handler.remove = function() {
+          handler.remove = function() {
             MM.removeEvent(map.parent, 'mousewheel', mouseWheel);
             _zoomDiv.parentNode.removeChild(_zoomDiv);
+          };
+
+          return handler;
         };
 
-        return handler;
-    };
+        MM.DoubleClickHandler = function() {
+          var handler = {},
+          map;
 
-    MM.DoubleClickHandler = function() {
-        var handler = {},
-            map;
-
-        function doubleClick(e) {
+          function doubleClick(e) {
             // Ensure that this handler is attached once.
             // Get the point on the map that was double-clicked
             var point = MM.getMousePoint(e, map);
             // use shift-double-click to zoom out
             map.zoomByAbout(e.shiftKey ? -1 : 1, point);
             return MM.cancelEvent(e);
-        }
+          }
 
-        handler.init = function(x) {
+          handler.init = function(x) {
             map = x;
             MM.addEvent(map.parent, 'dblclick', doubleClick);
             return handler;
-        };
+          };
 
-        handler.remove = function() {
+          handler.remove = function() {
             MM.removeEvent(map.parent, 'dblclick', doubleClick);
-        };
+          };
 
-        return handler;
-    };
+          return handler;
+        };
 
     // Handle the use of mouse dragging to pan the map.
     MM.DragHandler = function() {
-        var handler = {},
-            prevMouse,
-            map;
+      var handler = {},
+      prevMouse,
+      map;
 
-        function mouseDown(e) {
-            if (e.shiftKey || e.button == 2) return;
-            MM.addEvent(document, 'mouseup', mouseUp);
-            MM.addEvent(document, 'mousemove', mouseMove);
+      function mouseDown(e) {
+        if (e.shiftKey || e.button == 2) return;
+        MM.addEvent(document, 'mouseup', mouseUp);
+        MM.addEvent(document, 'mousemove', mouseMove);
 
-            prevMouse = new MM.Point(e.clientX, e.clientY);
-            map.parent.style.cursor = 'move';
+        prevMouse = new MM.Point(e.clientX, e.clientY);
+        map.parent.style.cursor = 'move';
 
-            return MM.cancelEvent(e);
+        return MM.cancelEvent(e);
+      }
+
+      function mouseUp(e) {
+        MM.removeEvent(document, 'mouseup', mouseUp);
+        MM.removeEvent(document, 'mousemove', mouseMove);
+
+        prevMouse = null;
+        map.parent.style.cursor = '';
+
+        return MM.cancelEvent(e);
+      }
+
+      function mouseMove(e) {
+        if (prevMouse) {
+          map.panBy(
+            e.clientX - prevMouse.x,
+            e.clientY - prevMouse.y);
+          prevMouse.x = e.clientX;
+          prevMouse.y = e.clientY;
+          prevMouse.t = +new Date();
         }
 
-        function mouseUp(e) {
-            MM.removeEvent(document, 'mouseup', mouseUp);
-            MM.removeEvent(document, 'mousemove', mouseMove);
+        return MM.cancelEvent(e);
+      }
 
-            prevMouse = null;
-            map.parent.style.cursor = '';
-
-            return MM.cancelEvent(e);
-        }
-
-        function mouseMove(e) {
-            if (prevMouse) {
-                map.panBy(
-                    e.clientX - prevMouse.x,
-                    e.clientY - prevMouse.y);
-                prevMouse.x = e.clientX;
-                prevMouse.y = e.clientY;
-                prevMouse.t = +new Date();
-            }
-
-            return MM.cancelEvent(e);
-        }
-
-        handler.init = function(x) {
-            map = x;
-            MM.addEvent(map.parent, 'mousedown', mouseDown);
-            return handler;
-        };
-
-        handler.remove = function() {
-            MM.removeEvent(map.parent, 'mousedown', mouseDown);
-        };
-
+      handler.init = function(x) {
+        map = x;
+        MM.addEvent(map.parent, 'mousedown', mouseDown);
         return handler;
+      };
+
+      handler.remove = function() {
+        MM.removeEvent(map.parent, 'mousedown', mouseDown);
+      };
+
+      return handler;
     };
 
     MM.MouseHandler = function() {
-        var handler = {},
-            map,
-            handlers;
+      var handler = {},
+      map,
+      handlers;
 
-        handler.init = function(x) {
-            map = x;
-            handlers = [
-                MM.DragHandler().init(map),
-                MM.DoubleClickHandler().init(map),
-                MM.MouseWheelHandler().init(map)
-            ];
-            return handler;
-        };
-
-        handler.remove = function() {
-            for (var i = 0; i < handlers.length; i++) {
-                handlers[i].remove();
-            }
-            return handler;
-        };
-
+      handler.init = function(x) {
+        map = x;
+        handlers = [
+        MM.DragHandler().init(map),
+        MM.DoubleClickHandler().init(map),
+        MM.MouseWheelHandler().init(map)
+        ];
         return handler;
+      };
+
+      handler.remove = function() {
+        for (var i = 0; i < handlers.length; i++) {
+          handlers[i].remove();
+        }
+        return handler;
+      };
+
+      return handler;
     };
     MM.TouchHandler = function() {
-        var handler = {},
-            map,
-            maxTapTime = 250,
-            maxTapDistance = 30,
-            maxDoubleTapDelay = 350,
-            locations = {},
-            taps = [],
-            snapToZoom = true,
-            wasPinching = false,
-            lastPinchCenter = null;
+      var handler = {},
+      map,
+      maxTapTime = 250,
+      maxTapDistance = 30,
+      maxDoubleTapDelay = 350,
+      locations = {},
+      taps = [],
+      snapToZoom = true,
+      wasPinching = false,
+      lastPinchCenter = null;
 
-        function isTouchable () {
-             var el = document.createElement('div');
-             el.setAttribute('ongesturestart', 'return;');
-             return (typeof el.ongesturestart === 'function');
-        }
+      function isTouchable () {
+       var el = document.createElement('div');
+       el.setAttribute('ongesturestart', 'return;');
+       return (typeof el.ongesturestart === 'function');
+     }
 
-        function updateTouches(e) {
-            for (var i = 0; i < e.touches.length; i += 1) {
-                var t = e.touches[i];
-                if (t.identifier in locations) {
-                    var l = locations[t.identifier];
-                    l.x = t.clientX;
-                    l.y = t.clientY;
-                    l.scale = e.scale;
-                }
-                else {
-                    locations[t.identifier] = {
-                        scale: e.scale,
-                        startPos: { x: t.clientX, y: t.clientY },
-                        x: t.clientX,
-                        y: t.clientY,
-                        time: new Date().getTime()
-                    };
-                }
-            }
+     function updateTouches(e) {
+      for (var i = 0; i < e.touches.length; i += 1) {
+        var t = e.touches[i];
+        if (t.identifier in locations) {
+          var l = locations[t.identifier];
+          l.x = t.clientX;
+          l.y = t.clientY;
+          l.scale = e.scale;
         }
+        else {
+          locations[t.identifier] = {
+            scale: e.scale,
+            startPos: { x: t.clientX, y: t.clientY },
+            x: t.clientX,
+            y: t.clientY,
+            time: new Date().getTime()
+          };
+        }
+      }
+    }
 
         // Test whether touches are from the same source -
         // whether this is the same touchmove event.
         function sameTouch (event, touch) {
-            return (event && event.touch) &&
-                (touch.identifier == event.touch.identifier);
+          return (event && event.touch) &&
+          (touch.identifier == event.touch.identifier);
         }
 
         function touchStart(e) {
-            updateTouches(e);
+          updateTouches(e);
         }
 
         function touchMove(e) {
-            switch (e.touches.length) {
-                case 1:
-                    onPanning(e.touches[0]);
-                    break;
-                case 2:
-                    onPinching(e);
-                    break;
-            }
-            updateTouches(e);
-            return MM.cancelEvent(e);
+          switch (e.touches.length) {
+            case 1:
+            onPanning(e.touches[0]);
+            break;
+            case 2:
+            onPinching(e);
+            break;
+          }
+          updateTouches(e);
+          return MM.cancelEvent(e);
         }
 
         function touchEnd(e) {
-            var now = new Date().getTime();
+          var now = new Date().getTime();
             // round zoom if we're done pinching
             if (e.touches.length === 0 && wasPinching) {
-                onPinched(lastPinchCenter);
+              onPinched(lastPinchCenter);
             }
 
             // Look at each changed touch in turn.
             for (var i = 0; i < e.changedTouches.length; i += 1) {
-                var t = e.changedTouches[i],
-                    loc = locations[t.identifier];
+              var t = e.changedTouches[i],
+              loc = locations[t.identifier];
                 // if we didn't see this one (bug?)
                 // or if it was consumed by pinching already
                 // just skip to the next one
                 if (!loc || loc.wasPinch) {
-                    continue;
+                  continue;
                 }
 
                 // we now know we have an event object and a
@@ -2630,21 +2630,21 @@ var MM = com.modestmaps = {
                 // what kind of event it is based on how long it
                 // lasted and how far it moved.
                 var pos = { x: t.clientX, y: t.clientY },
-                    time = now - loc.time,
-                    travel = MM.Point.distance(pos, loc.startPos);
+                time = now - loc.time,
+                travel = MM.Point.distance(pos, loc.startPos);
                 if (travel > maxTapDistance) {
                     // we will to assume that the drag has been handled separately
-                } else if (time > maxTapTime) {
+                  } else if (time > maxTapTime) {
                     // close in space, but not in time: a hold
                     pos.end = now;
                     pos.duration = time;
                     onHold(pos);
-                } else {
+                  } else {
                     // close in both time and space: a tap
                     pos.time = now;
                     onTap(pos);
+                  }
                 }
-            }
 
             // Weird, sometimes an end event doesn't get thrown
             // for a touch that nevertheless has disappeared.
@@ -2652,31 +2652,31 @@ var MM = com.modestmaps = {
 
             var validTouchIds = {};
             for (var j = 0; j < e.touches.length; j++) {
-                validTouchIds[e.touches[j].identifier] = true;
+              validTouchIds[e.touches[j].identifier] = true;
             }
             for (var id in locations) {
-                if (!(id in validTouchIds)) {
-                    delete validTouchIds[id];
-                }
+              if (!(id in validTouchIds)) {
+                delete validTouchIds[id];
+              }
             }
 
             return MM.cancelEvent(e);
-        }
+          }
 
-        function onHold (hold) {
+          function onHold (hold) {
             // TODO
-        }
+          }
 
         // Handle a tap event - mainly watch for a doubleTap
         function onTap(tap) {
-            if (taps.length &&
-                (tap.time - taps[0].time) < maxDoubleTapDelay) {
-                onDoubleTap(tap);
-                taps = [];
-                return;
-            }
-            taps = [tap];
+          if (taps.length &&
+            (tap.time - taps[0].time) < maxDoubleTapDelay) {
+            onDoubleTap(tap);
+          taps = [];
+          return;
         }
+        taps = [tap];
+      }
 
         // Handle a double tap by zooming in a single zoom level to a
         // round zoom.
@@ -2688,23 +2688,23 @@ var MM = com.modestmaps = {
             // zoom in to a round number
             var p = new MM.Point(tap.x, tap.y);
             map.zoomByAbout(dz, p);
-        }
+          }
 
         // Re-transform the actual map parent's CSS transformation
         function onPanning (touch) {
-            var pos = { x: touch.clientX, y: touch.clientY },
-                prev = locations[touch.identifier];
-            map.panBy(pos.x - prev.x, pos.y - prev.y);
+          var pos = { x: touch.clientX, y: touch.clientY },
+          prev = locations[touch.identifier];
+          map.panBy(pos.x - prev.x, pos.y - prev.y);
         }
 
         function onPinching(e) {
             // use the first two touches and their previous positions
             var t0 = e.touches[0],
-                t1 = e.touches[1],
-                p0 = new MM.Point(t0.clientX, t0.clientY),
-                p1 = new MM.Point(t1.clientX, t1.clientY),
-                l0 = locations[t0.identifier],
-                l1 = locations[t1.identifier];
+            t1 = e.touches[1],
+            p0 = new MM.Point(t0.clientX, t0.clientY),
+            p1 = new MM.Point(t1.clientX, t1.clientY),
+            l0 = locations[t0.identifier],
+            l1 = locations[t1.identifier];
 
             // mark these touches so they aren't used as taps/holds
             l0.wasPinch = true;
@@ -2714,18 +2714,18 @@ var MM = com.modestmaps = {
             var center = MM.Point.interpolate(p0, p1, 0.5);
 
             map.zoomByAbout(
-                Math.log(e.scale) / Math.LN2 -
-                Math.log(l0.scale) / Math.LN2,
-                center );
+              Math.log(e.scale) / Math.LN2 -
+              Math.log(l0.scale) / Math.LN2,
+              center );
 
             // pan from the previous center of these touches
             var prevCenter = MM.Point.interpolate(l0, l1, 0.5);
 
             map.panBy(center.x - prevCenter.x,
-                           center.y - prevCenter.y);
+             center.y - prevCenter.y);
             wasPinching = true;
             lastPinchCenter = center;
-        }
+          }
 
         // When a pinch event ends, round the zoom of the map.
         function onPinched(p) {
@@ -2733,13 +2733,13 @@ var MM = com.modestmaps = {
             if (snapToZoom) {
                 var z = map.getZoom(), // current zoom
                     tz =Math.round(z);     // target zoom
-                map.zoomByAbout(tz - z, p);
-            }
-            wasPinching = false;
-        }
+                    map.zoomByAbout(tz - z, p);
+                  }
+                  wasPinching = false;
+                }
 
-        handler.init = function(x) {
-            map = x;
+                handler.init = function(x) {
+                  map = x;
 
             // Fail early if this isn't a touch device.
             if (!isTouchable()) return handler;
@@ -2748,9 +2748,9 @@ var MM = com.modestmaps = {
             MM.addEvent(map.parent, 'touchmove', touchMove);
             MM.addEvent(map.parent, 'touchend', touchEnd);
             return handler;
-        };
+          };
 
-        handler.remove = function() {
+          handler.remove = function() {
             // Fail early if this isn't a touch device.
             if (!isTouchable()) return handler;
 
@@ -2758,10 +2758,10 @@ var MM = com.modestmaps = {
             MM.removeEvent(map.parent, 'touchmove', touchMove);
             MM.removeEvent(map.parent, 'touchend', touchEnd);
             return handler;
-        };
+          };
 
-        return handler;
-    };
+          return handler;
+        };
     // CallbackManager
     // ---------------
     // A general-purpose event binding manager used by `Map`
@@ -2770,11 +2770,11 @@ var MM = com.modestmaps = {
     // Construct a new CallbackManager, with an list of
     // supported events.
     MM.CallbackManager = function(owner, events) {
-        this.owner = owner;
-        this.callbacks = {};
-        for (var i = 0; i < events.length; i++) {
-            this.callbacks[events[i]] = [];
-        }
+      this.owner = owner;
+      this.callbacks = {};
+      for (var i = 0; i < events.length; i++) {
+        this.callbacks[events[i]] = [];
+      }
     };
 
     // CallbackManager does simple event management for modestmaps
@@ -2790,42 +2790,42 @@ var MM = com.modestmaps = {
         // Add a callback to this object - where the `event` is a string of
         // the event name and `callback` is a function.
         addCallback: function(event, callback) {
-            if (typeof(callback) == 'function' && this.callbacks[event]) {
-                this.callbacks[event].push(callback);
-            }
+          if (typeof(callback) == 'function' && this.callbacks[event]) {
+            this.callbacks[event].push(callback);
+          }
         },
 
         // Remove a callback. The given function needs to be equal (`===`) to
         // the callback added in `addCallback`, so named functions should be
         // used as callbacks.
         removeCallback: function(event, callback) {
-            if (typeof(callback) == 'function' && this.callbacks[event]) {
-                var cbs = this.callbacks[event],
-                    len = cbs.length;
-                for (var i = 0; i < len; i++) {
-                  if (cbs[i] === callback) {
-                    cbs.splice(i,1);
-                    break;
-                  }
-                }
+          if (typeof(callback) == 'function' && this.callbacks[event]) {
+            var cbs = this.callbacks[event],
+            len = cbs.length;
+            for (var i = 0; i < len; i++) {
+              if (cbs[i] === callback) {
+                cbs.splice(i,1);
+                break;
+              }
             }
+          }
         },
 
         // Trigger a callback, passing it an object or string from the second
         // argument.
         dispatchCallback: function(event, message) {
-            if(this.callbacks[event]) {
-                for (var i = 0; i < this.callbacks[event].length; i += 1) {
-                    try {
-                        this.callbacks[event][i](this.owner, message);
-                    } catch(e) {
+          if(this.callbacks[event]) {
+            for (var i = 0; i < this.callbacks[event].length; i += 1) {
+              try {
+                this.callbacks[event][i](this.owner, message);
+              } catch(e) {
                         //console.log(e);
                         // meh
+                      }
                     }
+                  }
                 }
-            }
-        }
-    };
+              };
     // RequestManager
     // --------------
     // an image loading queue
@@ -2843,10 +2843,10 @@ var MM = com.modestmaps = {
         this.requestQueue = [];
 
         this.callbackManager = new MM.CallbackManager(this, [
-            'requestcomplete', 'requesterror']);
-    };
+          'requestcomplete', 'requesterror']);
+      };
 
-    MM.RequestManager.prototype = {
+      MM.RequestManager.prototype = {
 
         // DOM element, hidden, for making sure images dispatch complete events
         loadingBay: null,
@@ -2868,33 +2868,33 @@ var MM = com.modestmaps = {
         callbackManager: null,
 
         addCallback: function(event, callback) {
-            this.callbackManager.addCallback(event,callback);
+          this.callbackManager.addCallback(event,callback);
         },
 
         removeCallback: function(event, callback) {
-            this.callbackManager.removeCallback(event,callback);
+          this.callbackManager.removeCallback(event,callback);
         },
 
         dispatchCallback: function(event, message) {
-            this.callbackManager.dispatchCallback(event,message);
+          this.callbackManager.dispatchCallback(event,message);
         },
 
         // Clear everything in the queue by excluding nothing
         clear: function() {
-            this.clearExcept({});
+          this.clearExcept({});
         },
 
         clearRequest: function(id) {
-            if(id in this.requestsById) {
-                delete this.requestsById[id];
-            }
+          if(id in this.requestsById) {
+            delete this.requestsById[id];
+          }
 
-            for(var i = 0; i < this.requestQueue.length; i++) {
-                var request = this.requestQueue[i];
-                if(request && request.id == id) {
-                    this.requestQueue[i] = null;
-                }
+          for(var i = 0; i < this.requestQueue.length; i++) {
+            var request = this.requestQueue[i];
+            if(request && request.id == id) {
+              this.requestQueue[i] = null;
             }
+          }
         },
 
         // Clear everything in the queue except for certain keys, specified
@@ -2905,22 +2905,22 @@ var MM = com.modestmaps = {
 
             // clear things from the queue first...
             for (var i = 0; i < this.requestQueue.length; i++) {
-                var request = this.requestQueue[i];
-                if (request && !(request.id in validIds)) {
-                    this.requestQueue[i] = null;
-                }
+              var request = this.requestQueue[i];
+              if (request && !(request.id in validIds)) {
+                this.requestQueue[i] = null;
+              }
             }
 
             // then check the loadingBay...
             var openRequests = this.loadingBay.childNodes;
             for (var j = openRequests.length-1; j >= 0; j--) {
-                var img = openRequests[j];
-                if (!(img.id in validIds)) {
-                    this.loadingBay.removeChild(img);
-                    this.openRequestCount--;
-                    /* console.log(this.openRequestCount + " open requests"); */
-                    img.src = img.coord = img.onload = img.onerror = null;
-                }
+              var img = openRequests[j];
+              if (!(img.id in validIds)) {
+                this.loadingBay.removeChild(img);
+                this.openRequestCount--;
+                /* console.log(this.openRequestCount + " open requests"); */
+                img.src = img.coord = img.onload = img.onerror = null;
+              }
             }
 
             // hasOwnProperty protects against prototype additions
@@ -2928,52 +2928,52 @@ var MM = com.modestmaps = {
             //  Ignore standards at your own peril."
             // -- http://www.yuiblog.com/blog/2006/09/26/for-in-intrigue/
             for (var id in this.requestsById) {
-                if (!(id in validIds)) {
-                    if (this.requestsById.hasOwnProperty(id)) {
-                        var requestToRemove = this.requestsById[id];
+              if (!(id in validIds)) {
+                if (this.requestsById.hasOwnProperty(id)) {
+                  var requestToRemove = this.requestsById[id];
                         // whether we've done the request or not...
                         delete this.requestsById[id];
                         if (requestToRemove !== null) {
-                            requestToRemove =
-                                requestToRemove.id =
-                                requestToRemove.coord =
-                                requestToRemove.url = null;
+                          requestToRemove =
+                          requestToRemove.id =
+                          requestToRemove.coord =
+                          requestToRemove.url = null;
                         }
+                      }
                     }
-                }
-            }
-        },
+                  }
+                },
 
         // Given a tile id, check whether the RequestManager is currently
         // requesting it and waiting for the result.
         hasRequest: function(id) {
-            return (id in this.requestsById);
+          return (id in this.requestsById);
         },
 
         // * TODO: remove dependency on coord (it's for sorting, maybe call it data?)
         // * TODO: rename to requestImage once it's not tile specific
         requestTile: function(id, coord, url) {
-            if (!(id in this.requestsById)) {
-                var request = { id: id, coord: coord.copy(), url: url };
+          if (!(id in this.requestsById)) {
+            var request = { id: id, coord: coord.copy(), url: url };
                 // if there's no url just make sure we don't request this image again
                 this.requestsById[id] = request;
                 if (url) {
-                    this.requestQueue.push(request);
-                    /* console.log(this.requestQueue.length + ' pending requests'); */
+                  this.requestQueue.push(request);
+                  /* console.log(this.requestQueue.length + ' pending requests'); */
                 }
-            }
-        },
+              }
+            },
 
-        getProcessQueue: function() {
+            getProcessQueue: function() {
             // let's only create this closure once...
             if (!this._processQueue) {
-                var theManager = this;
-                this._processQueue = function() {
-                    theManager.processQueue();
-                };
+              var theManager = this;
+              this._processQueue = function() {
+                theManager.processQueue();
+              };
             }
             return this._processQueue;
-        },
+          },
 
         // Select images from the `requestQueue` and create image elements for
         // them, attaching their load events to the function returned by
@@ -2982,13 +2982,13 @@ var MM = com.modestmaps = {
             // When the request queue fills up beyond 8, start sorting the
             // requests so that spiral-loading or another pattern can be used.
             if (sortFunc && this.requestQueue.length > 8) {
-                this.requestQueue.sort(sortFunc);
+              this.requestQueue.sort(sortFunc);
             }
             while (this.openRequestCount < this.maxOpenRequests && this.requestQueue.length > 0) {
-                var request = this.requestQueue.pop();
-                if (request) {
-                    this.openRequestCount++;
-                    /* console.log(this.openRequestCount + ' open requests'); */
+              var request = this.requestQueue.pop();
+              if (request) {
+                this.openRequestCount++;
+                /* console.log(this.openRequestCount + ' open requests'); */
 
                     // JSLitmus benchmark shows createElement is a little faster than
                     // new Image() in Firefox and roughly the same in Safari:
@@ -3013,11 +3013,11 @@ var MM = com.modestmaps = {
 
                     // keep things tidy
                     request = request.id = request.coord = request.url = null;
+                  }
                 }
-            }
-        },
+              },
 
-        _loadComplete: null,
+              _loadComplete: null,
 
         // Get the singleton `_loadComplete` function that is called on image
         // load events, either removing them from the queue and dispatching an
@@ -3026,8 +3026,8 @@ var MM = com.modestmaps = {
         getLoadComplete: function() {
             // let's only create this closure once...
             if (!this._loadComplete) {
-                var theManager = this;
-                this._loadComplete = function(e) {
+              var theManager = this;
+              this._loadComplete = function(e) {
                     // this is needed because we don't use MM.addEvent for images
                     e = e || window.event;
 
@@ -3047,19 +3047,19 @@ var MM = com.modestmaps = {
 
                     // NB:- complete is also true onerror if we got a 404
                     if (e.type === 'load' && (img.complete ||
-                        (img.readyState && img.readyState == 'complete'))) {
-                        theManager.dispatchCallback('requestcomplete', img);
-                    } else {
+                      (img.readyState && img.readyState == 'complete'))) {
+                      theManager.dispatchCallback('requestcomplete', img);
+                  } else {
                         // if it didn't finish clear its src to make sure it
                         // really stops loading
                         // FIXME: we'll never retry because this id is still
                         // in requestsById - is that right?
                         theManager.dispatchCallback('requesterror', {
-                            element: img,
-                            url: ('' + img.src)
+                          element: img,
+                          url: ('' + img.src)
                         });
                         img.src = null;
-                    }
+                      }
 
                     // keep going in the same order
                     // use `setTimeout()` to avoid the IE recursion limit, see
@@ -3067,23 +3067,23 @@ var MM = com.modestmaps = {
                     // and https://github.com/stamen/modestmaps-js/issues/12
                     setTimeout(theManager.getProcessQueue(), 0);
 
-                };
-            }
-            return this._loadComplete;
-        }
+                  };
+                }
+                return this._loadComplete;
+              }
 
-    };
+            };
 
     // Layer
     MM.Layer = function(provider, parent, name) {
-        this.parent = parent || document.createElement('div');
-        this.parent.style.cssText = 'position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; margin: 0; padding: 0; z-index: 0';
-        this.name = name;
-        this.levels = {};
-        this.requestManager = new MM.RequestManager();
-        this.requestManager.addCallback('requestcomplete', this.getTileComplete());
-        this.requestManager.addCallback('requesterror', this.getTileError());
-        if (provider) this.setProvider(provider);
+      this.parent = parent || document.createElement('div');
+      this.parent.style.cssText = 'position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; margin: 0; padding: 0; z-index: 0';
+      this.name = name;
+      this.levels = {};
+      this.requestManager = new MM.RequestManager();
+      this.requestManager.addCallback('requestcomplete', this.getTileComplete());
+      this.requestManager.addCallback('requesterror', this.getTileError());
+      if (provider) this.setProvider(provider);
     };
 
     MM.Layer.prototype = {
@@ -3099,50 +3099,50 @@ var MM = com.modestmaps = {
         _tileComplete: null,
 
         getTileComplete: function() {
-            if (!this._tileComplete) {
-                var theLayer = this;
-                this._tileComplete = function(manager, tile) {
-                    theLayer.tiles[tile.id] = tile;
-                    theLayer.positionTile(tile);
-                };
-            }
-            return this._tileComplete;
+          if (!this._tileComplete) {
+            var theLayer = this;
+            this._tileComplete = function(manager, tile) {
+              theLayer.tiles[tile.id] = tile;
+              theLayer.positionTile(tile);
+            };
+          }
+          return this._tileComplete;
         },
 
         getTileError: function() {
-            if (!this._tileError) {
-                var theLayer = this;
-                this._tileError = function(manager, tile) {
-                    tile.element.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-                    theLayer.tiles[tile.element.id] = tile.element;
-                    theLayer.positionTile(tile.element);
-                };
-            }
-            return this._tileError;
+          if (!this._tileError) {
+            var theLayer = this;
+            this._tileError = function(manager, tile) {
+              tile.element.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+              theLayer.tiles[tile.element.id] = tile.element;
+              theLayer.positionTile(tile.element);
+            };
+          }
+          return this._tileError;
         },
 
         draw: function() {
-            if (!this.enabled || !this.map) return;
+          if (!this.enabled || !this.map) return;
             // compares manhattan distance from center of
             // requested tiles to current map center
             // NB:- requested tiles are *popped* from queue, so we do a descending sort
             var theCoord = this.map.coordinate.zoomTo(Math.round(this.map.coordinate.zoom));
 
             function centerDistanceCompare(r1, r2) {
-                if (r1 && r2) {
-                    var c1 = r1.coord;
-                    var c2 = r2.coord;
-                    if (c1.zoom == c2.zoom) {
-                        var ds1 = Math.abs(theCoord.row - c1.row - 0.5) +
-                                  Math.abs(theCoord.column - c1.column - 0.5);
-                        var ds2 = Math.abs(theCoord.row - c2.row - 0.5) +
-                                  Math.abs(theCoord.column - c2.column - 0.5);
-                        return ds1 < ds2 ? 1 : ds1 > ds2 ? -1 : 0;
-                    } else {
-                        return c1.zoom < c2.zoom ? 1 : c1.zoom > c2.zoom ? -1 : 0;
-                    }
+              if (r1 && r2) {
+                var c1 = r1.coord;
+                var c2 = r2.coord;
+                if (c1.zoom == c2.zoom) {
+                  var ds1 = Math.abs(theCoord.row - c1.row - 0.5) +
+                  Math.abs(theCoord.column - c1.column - 0.5);
+                  var ds2 = Math.abs(theCoord.row - c2.row - 0.5) +
+                  Math.abs(theCoord.column - c2.column - 0.5);
+                  return ds1 < ds2 ? 1 : ds1 > ds2 ? -1 : 0;
+                } else {
+                  return c1.zoom < c2.zoom ? 1 : c1.zoom > c2.zoom ? -1 : 0;
                 }
-                return r1 ? 1 : r2 ? -1 : 0;
+              }
+              return r1 ? 1 : r2 ? -1 : 0;
             }
 
             // if we're in between zoom levels, we need to choose the nearest:
@@ -3151,9 +3151,9 @@ var MM = com.modestmaps = {
             // these are the top left and bottom right tile coordinates
             // we'll be loading everything in between:
             var startCoord = this.map.pointCoordinate(new MM.Point(0,0))
-                .zoomTo(baseZoom).container();
+            .zoomTo(baseZoom).container();
             var endCoord = this.map.pointCoordinate(this.map.dimensions)
-                .zoomTo(baseZoom).container().right().down();
+            .zoomTo(baseZoom).container().right().down();
 
             // tiles with invalid keys will be removed from visible levels
             // requests for tiles with invalid keys will be canceled
@@ -3167,39 +3167,39 @@ var MM = com.modestmaps = {
             var tileCoord = startCoord.copy();
 
             for (tileCoord.column = startCoord.column;
-                 tileCoord.column <= endCoord.column; tileCoord.column++) {
-                for (tileCoord.row = startCoord.row;
-                     tileCoord.row <= endCoord.row; tileCoord.row++) {
-                    var validKeys = this.inventoryVisibleTile(levelElement, tileCoord);
+             tileCoord.column <= endCoord.column; tileCoord.column++) {
+              for (tileCoord.row = startCoord.row;
+               tileCoord.row <= endCoord.row; tileCoord.row++) {
+                var validKeys = this.inventoryVisibleTile(levelElement, tileCoord);
 
-                    while (validKeys.length) {
-                        validTileKeys[validKeys.pop()] = true;
-                    }
-                }
+              while (validKeys.length) {
+                validTileKeys[validKeys.pop()] = true;
+              }
             }
+          }
 
             // i from i to zoom-5 are levels that would be scaled too big,
             // i from zoom + 2 to levels. length are levels that would be
             // scaled too small (and tiles would be too numerous)
             for (var name in this.levels) {
-                if (this.levels.hasOwnProperty(name)) {
-                    var zoom = parseInt(name,10);
+              if (this.levels.hasOwnProperty(name)) {
+                var zoom = parseInt(name,10);
 
-                    if (zoom >= startCoord.zoom - 5 && zoom < startCoord.zoom + 2) {
-                        continue;
-                    }
-
-                    var level = this.levels[name];
-                    level.style.display = 'none';
-                    var visibleTiles = this.tileElementsInLevel(level);
-
-                    while (visibleTiles.length) {
-                        this.provider.releaseTile(visibleTiles[0].coord);
-                        this.requestManager.clearRequest(visibleTiles[0].coord.toKey());
-                        level.removeChild(visibleTiles[0]);
-                        visibleTiles.shift();
-                    }
+                if (zoom >= startCoord.zoom - 5 && zoom < startCoord.zoom + 2) {
+                  continue;
                 }
+
+                var level = this.levels[name];
+                level.style.display = 'none';
+                var visibleTiles = this.tileElementsInLevel(level);
+
+                while (visibleTiles.length) {
+                  this.provider.releaseTile(visibleTiles[0].coord);
+                  this.requestManager.clearRequest(visibleTiles[0].coord.toKey());
+                  level.removeChild(visibleTiles[0]);
+                  visibleTiles.shift();
+                }
+              }
             }
 
             // levels we want to see, if they have tiles in validTileKeys
@@ -3207,7 +3207,7 @@ var MM = com.modestmaps = {
             var maxLevel = startCoord.zoom + 2;
 
             for (var z = minLevel; z < maxLevel; z++) {
-                this.adjustVisibleLevel(this.levels[z], z, validTileKeys);
+              this.adjustVisibleLevel(this.levels[z], z, validTileKeys);
             }
 
             // cancel requests that aren't visible:
@@ -3215,7 +3215,7 @@ var MM = com.modestmaps = {
 
             // get newly requested tiles, sort according to current view:
             this.requestManager.processQueue(centerDistanceCompare);
-        },
+          },
 
         // For a given tile coordinate in a given level element, ensure that it's
         // correctly represented in the DOM including potentially-overlapping
@@ -3223,34 +3223,34 @@ var MM = com.modestmaps = {
         //
         // Return a list of valid (i.e. loadable?) tile keys.
         inventoryVisibleTile: function(layer_element, tile_coord) {
-            var tile_key = tile_coord.toKey(),
-                valid_tile_keys = [tile_key];
+          var tile_key = tile_coord.toKey(),
+          valid_tile_keys = [tile_key];
 
             // Check that the needed tile already exists someplace - add it to the DOM if it does.
             if (tile_key in this.tiles) {
-                var tile = this.tiles[tile_key];
+              var tile = this.tiles[tile_key];
 
                 // ensure it's in the DOM:
                 if (tile.parentNode != layer_element) {
-                    layer_element.appendChild(tile);
+                  layer_element.appendChild(tile);
                     // if the provider implements reAddTile(), call it
                     if ("reAddTile" in this.provider) {
-                        this.provider.reAddTile(tile_key, tile_coord, tile);
+                      this.provider.reAddTile(tile_key, tile_coord, tile);
                     }
-                }
+                  }
 
-                return valid_tile_keys;
-            }
+                  return valid_tile_keys;
+                }
 
             // Check that the needed tile has even been requested at all.
             if (!this.requestManager.hasRequest(tile_key)) {
-                var tileToRequest = this.provider.getTile(tile_coord);
-                if (typeof tileToRequest == 'string') {
-                    this.addTileImage(tile_key, tile_coord, tileToRequest);
+              var tileToRequest = this.provider.getTile(tile_coord);
+              if (typeof tileToRequest == 'string') {
+                this.addTileImage(tile_key, tile_coord, tileToRequest);
                 // tile must be truish
-                } else if (tileToRequest) {
-                    this.addTileElement(tile_key, tile_coord, tileToRequest);
-                }
+              } else if (tileToRequest) {
+                this.addTileElement(tile_key, tile_coord, tileToRequest);
+              }
             }
 
             // look for a parent tile in our image cache
@@ -3258,20 +3258,20 @@ var MM = com.modestmaps = {
             var maxStepsOut = tile_coord.zoom;
 
             for (var pz = 1; pz <= maxStepsOut; pz++) {
-                var parent_coord = tile_coord.zoomBy(-pz).container();
-                var parent_key = parent_coord.toKey();
+              var parent_coord = tile_coord.zoomBy(-pz).container();
+              var parent_key = parent_coord.toKey();
 
                 // only mark it valid if we have it already
                 if (parent_key in this.tiles) {
-                    valid_tile_keys.push(parent_key);
-                    tileCovered = true;
-                    break;
+                  valid_tile_keys.push(parent_key);
+                  tileCovered = true;
+                  break;
                 }
-            }
+              }
 
             // if we didn't find a parent, look at the children:
             if (!tileCovered) {
-                var child_coord = tile_coord.zoomBy(1);
+              var child_coord = tile_coord.zoomBy(1);
 
                 // mark everything valid whether or not we have it:
                 valid_tile_keys.push(child_coord.toKey());
@@ -3281,28 +3281,28 @@ var MM = com.modestmaps = {
                 valid_tile_keys.push(child_coord.toKey());
                 child_coord.column -= 1;
                 valid_tile_keys.push(child_coord.toKey());
-            }
+              }
 
-            return valid_tile_keys;
-        },
+              return valid_tile_keys;
+            },
 
-        tileElementsInLevel: function(level) {
+            tileElementsInLevel: function(level) {
             // this is somewhat future proof, we're looking for DOM elements
             // not necessarily <img> elements
             var tiles = [];
             for (var tile = level.firstChild; tile; tile = tile.nextSibling) {
-                if (tile.nodeType == 1) {
-                    tiles.push(tile);
-                }
+              if (tile.nodeType == 1) {
+                tiles.push(tile);
+              }
             }
             return tiles;
-        },
+          },
 
         /**
          * For a given level, adjust visibility as a whole and discard individual
          * tiles based on values in valid_tile_keys from inventoryVisibleTile().
          */
-        adjustVisibleLevel: function(level, zoom, valid_tile_keys) {
+         adjustVisibleLevel: function(level, zoom, valid_tile_keys) {
             // no tiles for this level yet
             if (!level) return;
 
@@ -3310,12 +3310,12 @@ var MM = com.modestmaps = {
             var theCoord = this.map.coordinate.copy();
 
             if (level.childNodes.length > 0) {
-                level.style.display = 'block';
-                scale = Math.pow(2, this.map.coordinate.zoom - zoom);
-                theCoord = theCoord.zoomTo(zoom);
+              level.style.display = 'block';
+              scale = Math.pow(2, this.map.coordinate.zoom - zoom);
+              theCoord = theCoord.zoomTo(zoom);
             } else {
-                level.style.display = 'none';
-                return false;
+              level.style.display = 'none';
+              return false;
             }
 
             var tileWidth = this.map.tileSize.x * scale;
@@ -3324,64 +3324,64 @@ var MM = com.modestmaps = {
             var tiles = this.tileElementsInLevel(level);
 
             while (tiles.length) {
-                var tile = tiles.pop();
+              var tile = tiles.pop();
 
-                if (!valid_tile_keys[tile.id]) {
-                    this.provider.releaseTile(tile.coord);
-                    this.requestManager.clearRequest(tile.coord.toKey());
-                    level.removeChild(tile);
-                } else {
+              if (!valid_tile_keys[tile.id]) {
+                this.provider.releaseTile(tile.coord);
+                this.requestManager.clearRequest(tile.coord.toKey());
+                level.removeChild(tile);
+              } else {
                     // position tiles
                     MM.moveElement(tile, {
-                        x: Math.round(center.x +
-                            (tile.coord.column - theCoord.column) * tileWidth),
-                        y: Math.round(center.y +
-                            (tile.coord.row - theCoord.row) * tileHeight),
-                        scale: scale,
+                      x: Math.round(center.x +
+                        (tile.coord.column - theCoord.column) * tileWidth),
+                      y: Math.round(center.y +
+                        (tile.coord.row - theCoord.row) * tileHeight),
+                      scale: scale,
                         // TODO: pass only scale or only w/h
                         width: this.map.tileSize.x,
                         height: this.map.tileSize.y
-                    });
+                      });
+                  }
                 }
-            }
-        },
+              },
 
-        createOrGetLevel: function(zoom) {
-            if (zoom in this.levels) {
-                return this.levels[zoom];
-            }
+              createOrGetLevel: function(zoom) {
+                if (zoom in this.levels) {
+                  return this.levels[zoom];
+                }
 
-            var level = document.createElement('div');
-            level.id = this.parent.id + '-zoom-' + zoom;
-            level.style.cssText = 'position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; margin: 0; padding: 0;';
-            level.style.zIndex = zoom;
+                var level = document.createElement('div');
+                level.id = this.parent.id + '-zoom-' + zoom;
+                level.style.cssText = 'position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; margin: 0; padding: 0;';
+                level.style.zIndex = zoom;
 
-            this.parent.appendChild(level);
-            this.levels[zoom] = level;
+                this.parent.appendChild(level);
+                this.levels[zoom] = level;
 
-            return level;
-        },
+                return level;
+              },
 
-        addTileImage: function(key, coord, url) {
-            this.requestManager.requestTile(key, coord, url);
-        },
+              addTileImage: function(key, coord, url) {
+                this.requestManager.requestTile(key, coord, url);
+              },
 
-        addTileElement: function(key, coordinate, element) {
+              addTileElement: function(key, coordinate, element) {
             // Expected in draw()
             element.id = key;
             element.coord = coordinate.copy();
             this.positionTile(element);
-        },
+          },
 
-        positionTile: function(tile) {
+          positionTile: function(tile) {
             // position this tile (avoids a full draw() call):
             var theCoord = this.map.coordinate.zoomTo(tile.coord.zoom);
 
             // Start tile positioning and prevent drag for modern browsers
             tile.style.cssText = 'position:absolute;-webkit-user-select:none;' +
-                '-webkit-user-drag:none;-moz-user-drag:none;-webkit-transform-origin:0 0;' +
-                '-moz-transform-origin:0 0;-o-transform-origin:0 0;-ms-transform-origin:0 0;' +
-                'width:' + this.map.tileSize.x + 'px; height: ' + this.map.tileSize.y + 'px;';
+            '-webkit-user-drag:none;-moz-user-drag:none;-webkit-transform-origin:0 0;' +
+            '-moz-transform-origin:0 0;-o-transform-origin:0 0;-ms-transform-origin:0 0;' +
+            'width:' + this.map.tileSize.x + 'px; height: ' + this.map.tileSize.y + 'px;';
 
             // Prevent drag for IE
             tile.ondragstart = function() { return false; };
@@ -3389,15 +3389,15 @@ var MM = com.modestmaps = {
             var scale = Math.pow(2, this.map.coordinate.zoom - tile.coord.zoom);
 
             MM.moveElement(tile, {
-                x: Math.round((this.map.dimensions.x/2) +
-                    (tile.coord.column - theCoord.column) * this.map.tileSize.x),
-                y: Math.round((this.map.dimensions.y/2) +
-                    (tile.coord.row - theCoord.row) * this.map.tileSize.y),
-                scale: scale,
+              x: Math.round((this.map.dimensions.x/2) +
+                (tile.coord.column - theCoord.column) * this.map.tileSize.x),
+              y: Math.round((this.map.dimensions.y/2) +
+                (tile.coord.row - theCoord.row) * this.map.tileSize.y),
+              scale: scale,
                 // TODO: pass only scale or only w/h
                 width: this.map.tileSize.x,
                 height: this.map.tileSize.y
-            });
+              });
 
             // add tile to its level
             var theLevel = this.levels[tile.coord.zoom];
@@ -3408,60 +3408,60 @@ var MM = com.modestmaps = {
 
             // ensure the level is visible if it's still the current level
             if (Math.round(this.map.coordinate.zoom) == tile.coord.zoom) {
-                theLevel.style.display = 'block';
+              theLevel.style.display = 'block';
             }
 
             // request a lazy redraw of all levels
             // this will remove tiles that were only visible
             // to cover this tile while it loaded:
             this.requestRedraw();
-        },
+          },
 
-        _redrawTimer: undefined,
+          _redrawTimer: undefined,
 
-        requestRedraw: function() {
+          requestRedraw: function() {
             // we'll always draw within 1 second of this request,
             // sometimes faster if there's already a pending redraw
             // this is used when a new tile arrives so that we clear
             // any parent/child tiles that were only being displayed
             // until the tile loads at the right zoom level
             if (!this._redrawTimer) {
-                this._redrawTimer = setTimeout(this.getRedraw(), 1000);
+              this._redrawTimer = setTimeout(this.getRedraw(), 1000);
             }
-        },
+          },
 
-        _redraw: null,
+          _redraw: null,
 
-        getRedraw: function() {
+          getRedraw: function() {
             // let's only create this closure once...
             if (!this._redraw) {
-                var theLayer = this;
-                this._redraw = function() {
-                    theLayer.draw();
-                    theLayer._redrawTimer = 0;
-                };
+              var theLayer = this;
+              this._redraw = function() {
+                theLayer.draw();
+                theLayer._redrawTimer = 0;
+              };
             }
             return this._redraw;
-        },
+          },
 
-        setProvider: function(newProvider) {
+          setProvider: function(newProvider) {
             var firstProvider = (this.provider === null);
 
             // if we already have a provider the we'll need to
             // clear the DOM, cancel requests and redraw
             if (!firstProvider) {
-                this.requestManager.clear();
+              this.requestManager.clear();
 
-                for (var name in this.levels) {
-                    if (this.levels.hasOwnProperty(name)) {
-                        var level = this.levels[name];
+              for (var name in this.levels) {
+                if (this.levels.hasOwnProperty(name)) {
+                  var level = this.levels[name];
 
-                        while (level.firstChild) {
-                            this.provider.releaseTile(level.firstChild.coord);
-                            level.removeChild(level.firstChild);
-                        }
-                    }
+                  while (level.firstChild) {
+                    this.provider.releaseTile(level.firstChild.coord);
+                    level.removeChild(level.firstChild);
+                  }
                 }
+              }
             }
 
             // first provider or not we'll init/reset some values...
@@ -3472,30 +3472,30 @@ var MM = com.modestmaps = {
             this.provider = newProvider;
 
             if (!firstProvider) {
-                this.draw();
+              this.draw();
             }
-        },
+          },
 
         // Enable a layer and show its dom element
         enable: function() {
-            this.enabled = true;
-            this.parent.style.display = '';
-            this.draw();
+          this.enabled = true;
+          this.parent.style.display = '';
+          this.draw();
         },
 
         // Disable a layer, don't display in DOM, clear all requests
         disable: function() {
-            this.enabled = false;
-            this.requestManager.clear();
-            this.parent.style.display = 'none';
+          this.enabled = false;
+          this.requestManager.clear();
+          this.parent.style.display = 'none';
         },
 
         // Remove this layer from the DOM, cancel all of its requests
         // and unbind any callbacks that are bound to it.
         destroy: function() {
-            this.requestManager.clear();
-            this.requestManager.removeCallback('requestcomplete', this.getTileComplete());
-            this.requestManager.removeCallback('requesterror', this.getTileError());
+          this.requestManager.clear();
+          this.requestManager.removeCallback('requestcomplete', this.getTileComplete());
+          this.requestManager.removeCallback('requesterror', this.getTileError());
             // TODO: does requestManager need a destroy function too?
             this.provider = null;
             // If this layer was ever attached to the DOM, detach it.
@@ -3503,8 +3503,8 @@ var MM = com.modestmaps = {
               this.parent.parentNode.removeChild(this.parent);
             }
             this.map = null;
-        }
-    };
+          }
+        };
 
     // Map
 
@@ -3522,13 +3522,13 @@ var MM = com.modestmaps = {
     //      Otherwise, each handler will be called with init(map)
     MM.Map = function(parent, layerOrLayers, dimensions, eventHandlers) {
 
-        if (typeof parent == 'string') {
-            parent = document.getElementById(parent);
-            if (!parent) {
-                throw 'The ID provided to modest maps could not be found.';
-            }
+      if (typeof parent == 'string') {
+        parent = document.getElementById(parent);
+        if (!parent) {
+          throw 'The ID provided to modest maps could not be found.';
         }
-        this.parent = parent;
+      }
+      this.parent = parent;
 
         // we're no longer adding width and height to parent.style but we still
         // need to enforce padding, overflow and position otherwise everything screws up
@@ -3538,28 +3538,28 @@ var MM = com.modestmaps = {
 
         var position = MM.getStyle(this.parent, 'position');
         if (position != 'relative' && position != 'absolute') {
-            this.parent.style.position = 'relative';
+          this.parent.style.position = 'relative';
         }
 
         this.layers = [];
 
         if (!layerOrLayers) {
-            layerOrLayers = [];
+          layerOrLayers = [];
         }
 
         if (!(layerOrLayers instanceof Array)) {
-            layerOrLayers = [ layerOrLayers ];
+          layerOrLayers = [ layerOrLayers ];
         }
 
         for (var i = 0; i < layerOrLayers.length; i++) {
-            this.addLayer(layerOrLayers[i]);
+          this.addLayer(layerOrLayers[i]);
         }
 
         // default to Google-y Mercator style maps
         this.projection = new MM.MercatorProjection(0,
-            MM.deriveTransformation(-Math.PI,  Math.PI, 0, 0,
-                                     Math.PI,  Math.PI, 1, 0,
-                                    -Math.PI, -Math.PI, 0, 1));
+          MM.deriveTransformation(-Math.PI,  Math.PI, 0, 0,
+           Math.PI,  Math.PI, 1, 0,
+           -Math.PI, -Math.PI, 0, 1));
         this.tileSize = new MM.Point(256, 256);
 
         // default 0-18 zoom level
@@ -3567,7 +3567,7 @@ var MM = com.modestmaps = {
         this.coordLimits = [
             new MM.Coordinate(0,-Infinity,0),           // top left outer
             new MM.Coordinate(1,Infinity,0).zoomTo(18) // bottom right inner
-        ];
+            ];
 
         // eyes towards null island
         this.coordinate = new MM.Coordinate(0.5, 0.5, 0);
@@ -3575,46 +3575,46 @@ var MM = com.modestmaps = {
         // if you don't specify dimensions we assume you want to fill the parent
         // unless the parent has no w/h, in which case we'll still use a default
         if (!dimensions) {
-            dimensions = new MM.Point(this.parent.offsetWidth,
-                                      this.parent.offsetHeight);
-            this.autoSize = true;
+          dimensions = new MM.Point(this.parent.offsetWidth,
+            this.parent.offsetHeight);
+          this.autoSize = true;
             // use destroy to get rid of this handler from the DOM
             MM.addEvent(window, 'resize', this.windowResize());
-        } else {
+          } else {
             this.autoSize = false;
             // don't call setSize here because it calls draw()
             this.parent.style.width = Math.round(dimensions.x) + 'px';
             this.parent.style.height = Math.round(dimensions.y) + 'px';
-        }
-        this.dimensions = dimensions;
+          }
+          this.dimensions = dimensions;
 
-        this.callbackManager = new MM.CallbackManager(this, [
+          this.callbackManager = new MM.CallbackManager(this, [
             'zoomed',
             'panned',
             'centered',
             'extentset',
             'resized',
             'drawn'
-        ]);
+            ]);
 
         // set up handlers last so that all required attributes/functions are in place if needed
         if (eventHandlers === undefined) {
-            this.eventHandlers = [
-                MM.MouseHandler().init(this),
-                MM.TouchHandler().init(this)
-            ];
+          this.eventHandlers = [
+          MM.MouseHandler().init(this),
+          MM.TouchHandler().init(this)
+          ];
         } else {
-            this.eventHandlers = eventHandlers;
-            if (eventHandlers instanceof Array) {
-                for (var j = 0; j < eventHandlers.length; j++) {
-                    eventHandlers[j].init(this);
-                }
+          this.eventHandlers = eventHandlers;
+          if (eventHandlers instanceof Array) {
+            for (var j = 0; j < eventHandlers.length; j++) {
+              eventHandlers[j].init(this);
             }
+          }
         }
 
-    };
+      };
 
-    MM.Map.prototype = {
+      MM.Map.prototype = {
 
         parent: null,          // DOM Element
         dimensions: null,      // MM.Point with x/y size of parent element
@@ -3634,55 +3634,55 @@ var MM = com.modestmaps = {
         autoSize: null,        // Boolean, true if we have a window resize listener
 
         toString: function() {
-            return 'Map(#' + this.parent.id + ')';
+          return 'Map(#' + this.parent.id + ')';
         },
 
         // callbacks...
 
         addCallback: function(event, callback) {
-            this.callbackManager.addCallback(event, callback);
-            return this;
+          this.callbackManager.addCallback(event, callback);
+          return this;
         },
 
         removeCallback: function(event, callback) {
-            this.callbackManager.removeCallback(event, callback);
-            return this;
+          this.callbackManager.removeCallback(event, callback);
+          return this;
         },
 
         dispatchCallback: function(event, message) {
-            this.callbackManager.dispatchCallback(event, message);
-            return this;
+          this.callbackManager.dispatchCallback(event, message);
+          return this;
         },
 
         windowResize: function() {
-            if (!this._windowResize) {
-                var theMap = this;
-                this._windowResize = function(event) {
+          if (!this._windowResize) {
+            var theMap = this;
+            this._windowResize = function(event) {
                     // don't call setSize here because it sets parent.style.width/height
                     // and setting the height breaks percentages and default styles
                     theMap.dimensions = new MM.Point(theMap.parent.offsetWidth, theMap.parent.offsetHeight);
                     theMap.draw();
                     theMap.dispatchCallback('resized', [theMap.dimensions]);
-                };
-            }
-            return this._windowResize;
-        },
+                  };
+                }
+                return this._windowResize;
+              },
 
         // A convenience function to restrict interactive zoom ranges.
         // (you should also adjust map provider to restrict which tiles get loaded,
         // or modify map.coordLimits and provider.tileLimits for finer control)
-        setZoomRange: function(minZoom, maxZoom) {
-            this.coordLimits[0] = this.coordLimits[0].zoomTo(minZoom);
-            this.coordLimits[1] = this.coordLimits[1].zoomTo(maxZoom);
-            return this;
-        },
+setZoomRange: function(minZoom, maxZoom) {
+  this.coordLimits[0] = this.coordLimits[0].zoomTo(minZoom);
+  this.coordLimits[1] = this.coordLimits[1].zoomTo(maxZoom);
+  return this;
+},
 
         // zooming
         zoomBy: function(zoomOffset) {
-            this.coordinate = this.enforceLimits(this.coordinate.zoomBy(zoomOffset));
-            MM.getFrame(this.getRedraw());
-            this.dispatchCallback('zoomed', zoomOffset);
-            return this;
+          this.coordinate = this.enforceLimits(this.coordinate.zoomBy(zoomOffset));
+          MM.getFrame(this.getRedraw());
+          this.dispatchCallback('zoomed', zoomOffset);
+          return this;
         },
 
         zoomIn: function()  { return this.zoomBy(1); },
@@ -3690,66 +3690,66 @@ var MM = com.modestmaps = {
         setZoom: function(z) { return this.zoomBy(z - this.coordinate.zoom); },
 
         zoomByAbout: function(zoomOffset, point) {
-            var location = this.pointLocation(point);
+          var location = this.pointLocation(point);
 
-            this.coordinate = this.enforceLimits(this.coordinate.zoomBy(zoomOffset));
-            var newPoint = this.locationPoint(location);
+          this.coordinate = this.enforceLimits(this.coordinate.zoomBy(zoomOffset));
+          var newPoint = this.locationPoint(location);
 
-            this.dispatchCallback('zoomed', zoomOffset);
-            return this.panBy(point.x - newPoint.x, point.y - newPoint.y);
+          this.dispatchCallback('zoomed', zoomOffset);
+          return this.panBy(point.x - newPoint.x, point.y - newPoint.y);
         },
 
         // panning
         panBy: function(dx, dy) {
-            this.coordinate.column -= dx / this.tileSize.x;
-            this.coordinate.row -= dy / this.tileSize.y;
+          this.coordinate.column -= dx / this.tileSize.x;
+          this.coordinate.row -= dy / this.tileSize.y;
 
-            this.coordinate = this.enforceLimits(this.coordinate);
+          this.coordinate = this.enforceLimits(this.coordinate);
 
             // Defer until the browser is ready to draw.
             MM.getFrame(this.getRedraw());
             this.dispatchCallback('panned', [dx, dy]);
             return this;
-        },
+          },
 
-        panLeft: function() { return this.panBy(100, 0); },
-        panRight: function() { return this.panBy(-100, 0); },
-        panDown: function() { return this.panBy(0, -100); },
-        panUp: function() { return this.panBy(0, 100); },
+          panLeft: function() { return this.panBy(100, 0); },
+          panRight: function() { return this.panBy(-100, 0); },
+          panDown: function() { return this.panBy(0, -100); },
+          panUp: function() { return this.panBy(0, 100); },
 
         // positioning
         setCenter: function(location) {
-            return this.setCenterZoom(location, this.coordinate.zoom);
+          return this.setCenterZoom(location, this.coordinate.zoom);
         },
 
         setCenterZoom: function(location, zoom) {
-            this.coordinate = this.projection.locationCoordinate(location).zoomTo(parseFloat(zoom) || 0);
-            MM.getFrame(this.getRedraw());
-            this.dispatchCallback('centered', [location, zoom]);
-            return this;
+          this.coordinate = this.projection.locationCoordinate(location).zoomTo(parseFloat(zoom) || 0);
+          MM.getFrame(this.getRedraw());
+          this.dispatchCallback('centered', [location, zoom]);
+          return this;
         },
 
         extentCoordinate: function(locations, precise) {
             // coerce locations to an array if it's a Extent instance
             if (locations instanceof MM.Extent) {
-                locations = locations.toArray();
+              locations = locations.toArray();
             }
 
             var TL, BR;
             for (var i = 0; i < locations.length; i++) {
-                var coordinate = this.projection.locationCoordinate(locations[i]);
-                if (TL) {
-                    TL.row = Math.min(TL.row, coordinate.row);
-                    TL.column = Math.min(TL.column, coordinate.column);
-                    TL.zoom = Math.min(TL.zoom, coordinate.zoom);
-                    BR.row = Math.max(BR.row, coordinate.row);
-                    BR.column = Math.max(BR.column, coordinate.column);
-                    BR.zoom = Math.max(BR.zoom, coordinate.zoom);
-                }
-                else {
-                    TL = coordinate.copy();
-                    BR = coordinate.copy();
-                }
+              var coordinate = this.projection.locationCoordinate(locations[i]);
+              if (TL) {
+                TL.row = Math.min(TL.row, coordinate.row);
+                TL.column = Math.min(TL.column, coordinate.column);
+                TL.zoom = Math.min(TL.zoom, coordinate.zoom);
+                BR.row = Math.max(BR.row, coordinate.row);
+                BR.column = Math.max(BR.column, coordinate.column);
+                BR.zoom = Math.max(BR.zoom, coordinate.zoom);
+              }
+              else {
+                TL = coordinate.copy();
+                BR = coordinate.copy();
+              }
             }
 
             var width = this.dimensions.x + 1;
@@ -3785,16 +3785,16 @@ var MM = com.modestmaps = {
             var centerColumn = (TL.column + BR.column) / 2;
             var centerZoom = TL.zoom;
             return new MM.Coordinate(centerRow, centerColumn, centerZoom).zoomTo(initZoom);
-        },
+          },
 
-        setExtent: function(locations, precise) {
+          setExtent: function(locations, precise) {
             this.coordinate = this.extentCoordinate(locations, precise);
             this.draw(); // draw calls enforceLimits
             // (if you switch to getFrame, call enforceLimits first)
 
             this.dispatchCallback('extentset', locations);
             return this;
-        },
+          },
 
         // Resize the map's container `<div>`, redrawing the map and triggering
         // `resized` to make sure that the map's presentation is still correct.
@@ -3805,20 +3805,20 @@ var MM = com.modestmaps = {
             this.parent.style.width = Math.round(this.dimensions.x) + 'px';
             this.parent.style.height = Math.round(this.dimensions.y) + 'px';
             if (this.autoSize) {
-                MM.removeEvent(window, 'resize', this.windowResize());
-                this.autoSize = false;
+              MM.removeEvent(window, 'resize', this.windowResize());
+              this.autoSize = false;
             }
             this.draw(); // draw calls enforceLimits
             // (if you switch to getFrame, call enforceLimits first)
             this.dispatchCallback('resized', this.dimensions);
             return this;
-        },
+          },
 
         // projecting points on and off screen
         coordinatePoint: function(coord) {
             // Return an x, y point on the map image for a given coordinate.
             if (coord.zoom != this.coordinate.zoom) {
-                coord = coord.zoomTo(this.coordinate.zoom);
+              coord = coord.zoomTo(this.coordinate.zoom);
             }
 
             // distance from the center of the map
@@ -3827,7 +3827,7 @@ var MM = com.modestmaps = {
             point.y += this.tileSize.y * (coord.row - this.coordinate.row);
 
             return point;
-        },
+          },
 
         // Get a `MM.Coordinate` from an `MM.Point` - returns a new tile-like object
         // from a screen point.
@@ -3838,86 +3838,86 @@ var MM = com.modestmaps = {
             coord.row += (point.y - this.dimensions.y / 2) / this.tileSize.y;
 
             return coord;
-        },
+          },
 
         // Return an MM.Coordinate (row,col,zoom) for an MM.Location (lat,lon).
         locationCoordinate: function(location) {
-            return this.projection.locationCoordinate(location);
+          return this.projection.locationCoordinate(location);
         },
 
         // Return an MM.Location (lat,lon) for an MM.Coordinate (row,col,zoom).
         coordinateLocation: function(coordinate) {
-            return this.projection.coordinateLocation(coordinate);
+          return this.projection.coordinateLocation(coordinate);
         },
 
         // Return an x, y point on the map image for a given geographical location.
         locationPoint: function(location) {
-            return this.coordinatePoint(this.locationCoordinate(location));
+          return this.coordinatePoint(this.locationCoordinate(location));
         },
 
         // Return a geographical location on the map image for a given x, y point.
         pointLocation: function(point) {
-            return this.coordinateLocation(this.pointCoordinate(point));
+          return this.coordinateLocation(this.pointCoordinate(point));
         },
 
         // inspecting
         getExtent: function() {
-            return new MM.Extent(
-                this.pointLocation(new MM.Point(0, 0)),
-                this.pointLocation(this.dimensions)
+          return new MM.Extent(
+            this.pointLocation(new MM.Point(0, 0)),
+            this.pointLocation(this.dimensions)
             );
         },
 
         extent: function(locations, precise) {
-            if (locations) {
-                return this.setExtent(locations, precise);
-            } else {
-                return this.getExtent();
-            }
+          if (locations) {
+            return this.setExtent(locations, precise);
+          } else {
+            return this.getExtent();
+          }
         },
 
         // Get the current centerpoint of the map, returning a `Location`
         getCenter: function() {
-            return this.projection.coordinateLocation(this.coordinate);
+          return this.projection.coordinateLocation(this.coordinate);
         },
 
         center: function(location) {
-            if (location) {
-                return this.setCenter(location);
-            } else {
-                return this.getCenter();
-            }
+          if (location) {
+            return this.setCenter(location);
+          } else {
+            return this.getCenter();
+          }
         },
 
         // Get the current zoom level of the map, returning a number
         getZoom: function() {
-            return this.coordinate.zoom;
+          return this.coordinate.zoom;
         },
 
         zoom: function(zoom) {
-            if (zoom !== undefined) {
-                return this.setZoom(zoom);
-            } else {
-                return this.getZoom();
-            }
+          if (zoom !== undefined) {
+            return this.setZoom(zoom);
+          } else {
+            return this.getZoom();
+          }
         },
 
         // return a copy of the layers array
         getLayers: function() {
-            return this.layers.slice();
+          return this.layers.slice();
         },
 
         // return the first layer with given name
         getLayer: function(name) {
-            for (var i = 0; i < this.layers.length; i++) {
-                if (name == this.layers[i].name)
-                    return this.layers[i];
-            }
+          for (var i = 0; i < this.layers.length; i++) {
+            if (name == this.layers[i].name)
+              return this.layers[i];
+          }
         },
 
         // return the layer at the given index
         getLayerAt: function(index) {
-            return this.layers[index];
+          return this.layers[index];
         },
 
         // put the given layer on top of all the others
@@ -3925,84 +3925,84 @@ var MM = com.modestmaps = {
         // added before the map has a valid `coordinate`, we request
         // a redraw only if the map has a center coordinate.
         addLayer: function(layer) {
-            this.layers.push(layer);
-            this.parent.appendChild(layer.parent);
+          this.layers.push(layer);
+          this.parent.appendChild(layer.parent);
             layer.map = this; // TODO: remove map property from MM.Layer?
             if (this.coordinate) {
               MM.getFrame(this.getRedraw());
             }
             return this;
-        },
+          },
 
         // find the given layer and remove it
         removeLayer: function(layer) {
-            for (var i = 0; i < this.layers.length; i++) {
-                if (layer == this.layers[i] || layer == this.layers[i].name) {
-                    this.removeLayerAt(i);
-                    break;
-                }
+          for (var i = 0; i < this.layers.length; i++) {
+            if (layer == this.layers[i] || layer == this.layers[i].name) {
+              this.removeLayerAt(i);
+              break;
             }
-            return this;
+          }
+          return this;
         },
 
         // replace the current layer at the given index with the given layer
         setLayerAt: function(index, layer) {
 
-            if (index < 0 || index >= this.layers.length) {
-                throw new Error('invalid index in setLayerAt(): ' + index);
-            }
+          if (index < 0 || index >= this.layers.length) {
+            throw new Error('invalid index in setLayerAt(): ' + index);
+          }
 
-            if (this.layers[index] != layer) {
+          if (this.layers[index] != layer) {
 
                 // clear existing layer at this index
                 if (index < this.layers.length) {
-                    var other = this.layers[index];
-                    this.parent.insertBefore(layer.parent, other.parent);
-                    other.destroy();
+                  var other = this.layers[index];
+                  this.parent.insertBefore(layer.parent, other.parent);
+                  other.destroy();
                 } else {
                 // Or if this will be the last layer, it can be simply appended
-                    this.parent.appendChild(layer.parent);
-                }
+                this.parent.appendChild(layer.parent);
+              }
 
-                this.layers[index] = layer;
+              this.layers[index] = layer;
                 layer.map = this; // TODO: remove map property from MM.Layer
 
                 MM.getFrame(this.getRedraw());
-            }
+              }
 
-            return this;
-        },
+              return this;
+            },
 
         // put the given layer at the given index, moving others if necessary
         insertLayerAt: function(index, layer) {
 
-            if (index < 0 || index > this.layers.length) {
-                throw new Error('invalid index in insertLayerAt(): ' + index);
-            }
+          if (index < 0 || index > this.layers.length) {
+            throw new Error('invalid index in insertLayerAt(): ' + index);
+          }
 
-            if (index == this.layers.length) {
+          if (index == this.layers.length) {
                 // it just gets tacked on to the end
                 this.layers.push(layer);
                 this.parent.appendChild(layer.parent);
-            } else {
+              } else {
                 // it needs to get slipped in amongst the others
                 var other = this.layers[index];
                 this.parent.insertBefore(layer.parent, other.parent);
                 this.layers.splice(index, 0, layer);
-            }
+              }
 
             layer.map = this; // TODO: remove map property from MM.Layer
 
             MM.getFrame(this.getRedraw());
 
             return this;
-        },
+          },
 
         // remove the layer at the given index, call .destroy() on the layer
         removeLayerAt: function(index) {
-            if (index < 0 || index >= this.layers.length) {
-                throw new Error('invalid index in removeLayer(): ' + index);
-            }
+          if (index < 0 || index >= this.layers.length) {
+            throw new Error('invalid index in removeLayer(): ' + index);
+          }
 
             // gone baby gone.
             var old = this.layers[index];
@@ -4010,18 +4010,18 @@ var MM = com.modestmaps = {
             old.destroy();
 
             return this;
-        },
+          },
 
         // switch the stacking order of two layers, by index
         swapLayersAt: function(i, j) {
 
-            if (i < 0 || i >= this.layers.length || j < 0 || j >= this.layers.length) {
-                throw new Error('invalid index in swapLayersAt(): ' + index);
-            }
+          if (i < 0 || i >= this.layers.length || j < 0 || j >= this.layers.length) {
+            throw new Error('invalid index in swapLayersAt(): ' + index);
+          }
 
-            var layer1 = this.layers[i],
-                layer2 = this.layers[j],
-                dummy = document.createElement('div');
+          var layer1 = this.layers[i],
+          layer2 = this.layers[j],
+          dummy = document.createElement('div');
 
             // kick layer2 out, replace it with the dummy.
             this.parent.replaceChild(dummy, layer2.parent);
@@ -4037,57 +4037,57 @@ var MM = com.modestmaps = {
             this.layers[j] = layer1;
 
             return this;
-        },
+          },
 
         // Enable and disable layers.
         // Disabled layers are not displayed, are not drawn, and do not request
         // tiles. They do maintain their layer index on the map.
         enableLayer: function(name) {
-            var l = this.getLayer(name);
-            if (l) l.enable();
-            return this;
+          var l = this.getLayer(name);
+          if (l) l.enable();
+          return this;
         },
 
         enableLayerAt: function(index) {
-            var l = this.getLayerAt(index);
-            if (l) l.enable();
-            return this;
+          var l = this.getLayerAt(index);
+          if (l) l.enable();
+          return this;
         },
 
         disableLayer: function(name) {
-            var l = this.getLayer(name);
-            if (l) l.disable();
-            return this;
+          var l = this.getLayer(name);
+          if (l) l.disable();
+          return this;
         },
 
         disableLayerAt: function(index) {
-            var l = this.getLayerAt(index);
-            if (l) l.disable();
-            return this;
+          var l = this.getLayerAt(index);
+          if (l) l.disable();
+          return this;
         },
 
 
         // limits
 
         enforceZoomLimits: function(coord) {
-            var limits = this.coordLimits;
-            if (limits) {
+          var limits = this.coordLimits;
+          if (limits) {
                 // clamp zoom level:
                 var minZoom = limits[0].zoom;
                 var maxZoom = limits[1].zoom;
                 if (coord.zoom < minZoom) {
-                    coord = coord.zoomTo(minZoom);
+                  coord = coord.zoomTo(minZoom);
                 }
                 else if (coord.zoom > maxZoom) {
-                    coord = coord.zoomTo(maxZoom);
+                  coord = coord.zoomTo(maxZoom);
                 }
-            }
-            return coord;
-        },
+              }
+              return coord;
+            },
 
-        enforcePanLimits: function(coord) {
+            enforcePanLimits: function(coord) {
 
-            if (this.coordLimits) {
+              if (this.coordLimits) {
 
                 coord = coord.copy();
 
@@ -4095,43 +4095,43 @@ var MM = com.modestmaps = {
                 var topLeftLimit = this.coordLimits[0].zoomTo(coord.zoom);
                 var bottomRightLimit = this.coordLimits[1].zoomTo(coord.zoom);
                 var currentTopLeft = this.pointCoordinate(new MM.Point(0, 0))
-                    .zoomTo(coord.zoom);
+                .zoomTo(coord.zoom);
                 var currentBottomRight = this.pointCoordinate(this.dimensions)
-                    .zoomTo(coord.zoom);
+                .zoomTo(coord.zoom);
 
                 // this handles infinite limits:
                 // (Infinity - Infinity) is Nan
                 // NaN is never less than anything
                 if (bottomRightLimit.row - topLeftLimit.row <
-                    currentBottomRight.row - currentTopLeft.row) {
+                  currentBottomRight.row - currentTopLeft.row) {
                     // if the limit is smaller than the current view center it
-                    coord.row = (bottomRightLimit.row + topLeftLimit.row) / 2;
+                  coord.row = (bottomRightLimit.row + topLeftLimit.row) / 2;
                 } else {
-                    if (currentTopLeft.row < topLeftLimit.row) {
-                        coord.row += topLeftLimit.row - currentTopLeft.row;
-                    } else if (currentBottomRight.row > bottomRightLimit.row) {
-                        coord.row -= currentBottomRight.row - bottomRightLimit.row;
-                    }
+                  if (currentTopLeft.row < topLeftLimit.row) {
+                    coord.row += topLeftLimit.row - currentTopLeft.row;
+                  } else if (currentBottomRight.row > bottomRightLimit.row) {
+                    coord.row -= currentBottomRight.row - bottomRightLimit.row;
+                  }
                 }
                 if (bottomRightLimit.column - topLeftLimit.column <
-                    currentBottomRight.column - currentTopLeft.column) {
+                  currentBottomRight.column - currentTopLeft.column) {
                     // if the limit is smaller than the current view, center it
-                    coord.column = (bottomRightLimit.column + topLeftLimit.column) / 2;
+                  coord.column = (bottomRightLimit.column + topLeftLimit.column) / 2;
                 } else {
-                    if (currentTopLeft.column < topLeftLimit.column) {
-                        coord.column += topLeftLimit.column - currentTopLeft.column;
-                    } else if (currentBottomRight.column > bottomRightLimit.column) {
-                        coord.column -= currentBottomRight.column - bottomRightLimit.column;
-                    }
+                  if (currentTopLeft.column < topLeftLimit.column) {
+                    coord.column += topLeftLimit.column - currentTopLeft.column;
+                  } else if (currentBottomRight.column > bottomRightLimit.column) {
+                    coord.column -= currentBottomRight.column - bottomRightLimit.column;
+                  }
                 }
-            }
+              }
 
-            return coord;
-        },
+              return coord;
+            },
 
         // Prevent accidentally navigating outside the `coordLimits` of the map.
         enforceLimits: function(coord) {
-            return this.enforcePanLimits(this.enforceZoomLimits(coord));
+          return this.enforcePanLimits(this.enforceZoomLimits(coord));
         },
 
         // rendering
@@ -4143,71 +4143,71 @@ var MM = com.modestmaps = {
 
             // if we don't have dimensions, check the parent size
             if (this.dimensions.x <= 0 || this.dimensions.y <= 0) {
-                if (this.autoSize) {
+              if (this.autoSize) {
                     // maybe the parent size has changed?
                     var w = this.parent.offsetWidth,
-                        h = this.parent.offsetHeight;
+                    h = this.parent.offsetHeight;
                     this.dimensions = new MM.Point(w,h);
                     if (w <= 0 || h <= 0) {
-                        return;
+                      return;
                     }
-                } else {
+                  } else {
                     // the issue can only be corrected with setSize
                     return;
+                  }
                 }
-            }
 
             // draw layers one by one
             for(var i = 0; i < this.layers.length; i++) {
-                this.layers[i].draw();
+              this.layers[i].draw();
             }
 
             this.dispatchCallback('drawn');
-        },
+          },
 
-        _redrawTimer: undefined,
+          _redrawTimer: undefined,
 
-        requestRedraw: function() {
+          requestRedraw: function() {
             // we'll always draw within 1 second of this request,
             // sometimes faster if there's already a pending redraw
             // this is used when a new tile arrives so that we clear
             // any parent/child tiles that were only being displayed
             // until the tile loads at the right zoom level
             if (!this._redrawTimer) {
-                this._redrawTimer = setTimeout(this.getRedraw(), 1000);
+              this._redrawTimer = setTimeout(this.getRedraw(), 1000);
             }
-        },
+          },
 
-        _redraw: null,
+          _redraw: null,
 
-        getRedraw: function() {
+          getRedraw: function() {
             // let's only create this closure once...
             if (!this._redraw) {
-                var theMap = this;
-                this._redraw = function() {
-                    theMap.draw();
-                    theMap._redrawTimer = 0;
-                };
+              var theMap = this;
+              this._redraw = function() {
+                theMap.draw();
+                theMap._redrawTimer = 0;
+              };
             }
             return this._redraw;
-        },
+          },
 
         // Attempts to destroy all attachment a map has to a page
         // and clear its memory usage.
         destroy: function() {
-            for (var j = 0; j < this.layers.length; j++) {
-                this.layers[j].destroy();
-            }
-            this.layers = [];
-            this.projection = null;
-            for (var i = 0; i < this.eventHandlers.length; i++) {
-                this.eventHandlers[i].remove();
-            }
-            if (this.autoSize) {
-                MM.removeEvent(window, 'resize', this.windowResize());
-            }
+          for (var j = 0; j < this.layers.length; j++) {
+            this.layers[j].destroy();
+          }
+          this.layers = [];
+          this.projection = null;
+          for (var i = 0; i < this.eventHandlers.length; i++) {
+            this.eventHandlers[i].remove();
+          }
+          if (this.autoSize) {
+            MM.removeEvent(window, 'resize', this.windowResize());
+          }
         }
-    };
+      };
     // Instance of a map intended for drawing to a div.
     //
     //  * `parent` (required DOM element)
@@ -4217,10 +4217,10 @@ var MM = com.modestmaps = {
     //      Location for map to show
     //  * `zoom` (required number)
     MM.mapByCenterZoom = function(parent, layerish, location, zoom) {
-        var layer = MM.coerceLayer(layerish),
-            map = new MM.Map(parent, layer, false);
-        map.setCenterZoom(location, zoom).draw();
-        return map;
+      var layer = MM.coerceLayer(layerish),
+      map = new MM.Map(parent, layer, false);
+      map.setCenterZoom(location, zoom).draw();
+      return map;
     };
 
     // Instance of a map intended for drawing to a div.
@@ -4233,26 +4233,26 @@ var MM = com.modestmaps = {
     //  * `locationB` (required MM.Location)
     //      Location of other map corner
     MM.mapByExtent = function(parent, layerish, locationA, locationB) {
-        var layer = MM.coerceLayer(layerish),
-            map = new MM.Map(parent, layer, false);
-        map.setExtent([locationA, locationB]).draw();
-        return map;
+      var layer = MM.coerceLayer(layerish),
+      map = new MM.Map(parent, layer, false);
+      map.setExtent([locationA, locationB]).draw();
+      return map;
     };
     if (typeof module !== 'undefined' && module.exports) {
       module.exports = {
-          Point: MM.Point,
-          Projection: MM.Projection,
-          MercatorProjection: MM.MercatorProjection,
-          LinearProjection: MM.LinearProjection,
-          Transformation: MM.Transformation,
-          Location: MM.Location,
-          MapProvider: MM.MapProvider,
-          Template: MM.Template,
-          Coordinate: MM.Coordinate,
-          deriveTransformation: MM.deriveTransformation
+        Point: MM.Point,
+        Projection: MM.Projection,
+        MercatorProjection: MM.MercatorProjection,
+        LinearProjection: MM.LinearProjection,
+        Transformation: MM.Transformation,
+        Location: MM.Location,
+        MapProvider: MM.MapProvider,
+        Template: MM.Template,
+        Coordinate: MM.Coordinate,
+        deriveTransformation: MM.deriveTransformation
       };
     }
-})(MM);
+  })(MM);
 // Copyright Google Inc.
 // Licensed under the Apache Licence Version 2.0
 // Autogenerated at Tue Oct 11 13:36:46 EDT 2011
@@ -4675,7 +4675,7 @@ html4.LOADERTYPES = {
 /**
  * @namespace
  */
-var html = (function (html4) {
+ var html = (function (html4) {
   var lcase;
   // The below may not be true on browsers in the Turkish locale.
   if ('script' === 'SCRIPT'.toLowerCase()) {
@@ -4689,12 +4689,12 @@ var html = (function (html4) {
      * # 'script'
      * }
      */
-    lcase = function (s) {
+     lcase = function (s) {
       return s.replace(
-          /[A-Z]/g,
-          function (ch) {
-            return String.fromCharCode(ch.charCodeAt(0) | 32);
-          });
+        /[A-Z]/g,
+        function (ch) {
+          return String.fromCharCode(ch.charCodeAt(0) | 32);
+        });
     };
   }
 
@@ -4747,7 +4747,7 @@ var html = (function (html4) {
    * @param name the content between the '&' and the ';'.
    * @return a single unicode code-point as a string.
    */
-  function lookupEntity(name) {
+   function lookupEntity(name) {
     name = lcase(name);  // TODO: &pi; is different from &Pi;
     if (ENTITIES.hasOwnProperty(name)) { return ENTITIES[name]; }
     var m = name.match(decimalEscapeRe);
@@ -4790,7 +4790,7 @@ var html = (function (html4) {
    * @param s a chunk of HTML CDATA.  It must not start or end inside an HTML
    *   entity.
    */
-  function unescapeEntities(s) {
+   function unescapeEntities(s) {
     return s.replace(entityRe, decodeOneEntity);
   }
 
@@ -4813,10 +4813,10 @@ var html = (function (html4) {
    * # 'Hello &lt;World&gt;!'
    * }
    */
-  function escapeAttrib(s) {
+   function escapeAttrib(s) {
     // Escaping '=' defangs many UTF-7 and SGML short-tag attacks.
     return s.replace(ampRe, '&amp;').replace(ltRe, '&lt;').replace(gtRe, '&gt;')
-        .replace(quotRe, '&#34;').replace(eqRe, '&#61;');
+    .replace(quotRe, '&#34;').replace(eqRe, '&#61;');
   }
 
   /**
@@ -4826,11 +4826,11 @@ var html = (function (html4) {
    * # '1 &lt; 2 &amp;&amp; 3 &gt; 4 &amp;&amp; 5 &lt; 7&amp;8'
    * }
    */
-  function normalizeRCData(rcdata) {
+   function normalizeRCData(rcdata) {
     return rcdata
-        .replace(looseAmpRe, '&amp;$1')
-        .replace(ltRe, '&lt;')
-        .replace(gtRe, '&gt;');
+    .replace(looseAmpRe, '&amp;$1')
+    .replace(ltRe, '&lt;')
+    .replace(gtRe, '&gt;');
   }
 
 
@@ -4851,8 +4851,8 @@ var html = (function (html4) {
       + ('(?:'
          + '([a-z][a-z-]*)'                    // attribute name
          + ('('                                // optionally followed
-            + '\\s*=\\s*'
-            + ('('
+          + '\\s*=\\s*'
+          + ('('
                // A double quoted string.
                + '\"[^\"]*\"'
                // A single quoted string.
@@ -4865,19 +4865,19 @@ var html = (function (html4) {
                // zero-width match would've eliminated that possibility.
                + '|[^>\"\'\\s]*'
                + ')'
-               )
-            + ')'
-            ) + '?'
+          )
+          + ')'
+         ) + '?'
          + ')'
-         )
+      )
       // End of tag captured in group 3.
       + '|(\/?>)'
       // Don't capture cruft
       + '|[\\s\\S][^a-z\\s>]*)',
-      'i');
+'i');
 
-  var OUTSIDE_TAG_TOKEN = new RegExp(
-      '^(?:'
+var OUTSIDE_TAG_TOKEN = new RegExp(
+  '^(?:'
       // Entity captured in group 1.
       + '&(\\#[0-9]+|\\#[x][0-9a-f]+|\\w+);'
       // Comment, doctypes, and processing instructions not captured.
@@ -4888,7 +4888,7 @@ var html = (function (html4) {
       + '|([^<&>]+)'
       // Cruft captured in group 5.
       + '|([<&>]))',
-      'i');
+'i');
 
   /**
    * Given a SAX-like event handler, produce a function that feeds those
@@ -4913,7 +4913,7 @@ var html = (function (html4) {
    * @return {Function} that takes a chunk of html and a parameter.
    *   The parameter is passed on to the handler methods.
    */
-  function makeSaxParser(handler) {
+   function makeSaxParser(handler) {
     return function parse(htmlText, param) {
       htmlText = String(htmlText);
       var htmlLower = null;
@@ -4939,9 +4939,9 @@ var html = (function (html4) {
               var encodedValue = m[3];
               switch (encodedValue.charCodeAt(0)) {  // Strip quotes
                 case 34: case 39:
-                  encodedValue = encodedValue.substring(
-                      1, encodedValue.length - 1);
-                  break;
+                encodedValue = encodedValue.substring(
+                  1, encodedValue.length - 1);
+                break;
               }
               decodedValue = unescapeEntities(stripNULs(encodedValue));
             } else {
@@ -4965,12 +4965,12 @@ var html = (function (html4) {
             }
 
             if (openTag
-                && (eflags & (html4.eflags.CDATA | html4.eflags.RCDATA))) {
+              && (eflags & (html4.eflags.CDATA | html4.eflags.RCDATA))) {
               if (htmlLower === null) {
                 htmlLower = lcase(htmlText);
               } else {
                 htmlLower = htmlLower.substring(
-                    htmlLower.length - htmlText.length);
+                  htmlLower.length - htmlText.length);
               }
               var dataEnd = htmlLower.indexOf('</' + tagName);
               if (dataEnd < 0) { dataEnd = htmlText.length; }
@@ -4999,15 +4999,15 @@ var html = (function (html4) {
             inTag = true;
             tagName = lcase(m[3]);
             eflags = html4.ELEMENTS.hasOwnProperty(tagName)
-                ? html4.ELEMENTS[tagName] : void 0;
+            ? html4.ELEMENTS[tagName] : void 0;
           } else if (m[4]) {  // Text
             if (handler.pcdata) { handler.pcdata(m[4], param); }
           } else if (m[5]) {  // Cruft
             if (handler.pcdata) {
               var ch = m[5];
               handler.pcdata(
-                  ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : '&amp;',
-                  param);
+                ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : '&amp;',
+                param);
             }
           }
         }
@@ -5025,25 +5025,25 @@ var html = (function (html4) {
    *     instance is reused, so should not be held.
    * @return {Function} from html to sanitized html
    */
-  function makeHtmlSanitizer(sanitizeAttributes) {
+   function makeHtmlSanitizer(sanitizeAttributes) {
     var stack;
     var ignoring;
     return makeSaxParser({
-        startDoc: function (_) {
-          stack = [];
-          ignoring = false;
-        },
-        startTag: function (tagName, attribs, out) {
-          if (ignoring) { return; }
-          if (!html4.ELEMENTS.hasOwnProperty(tagName)) { return; }
-          var eflags = html4.ELEMENTS[tagName];
-          if (eflags & html4.eflags.FOLDABLE) {
-            return;
-          } else if (eflags & html4.eflags.UNSAFE) {
-            ignoring = !(eflags & html4.eflags.EMPTY);
-            return;
-          }
-          attribs = sanitizeAttributes(tagName, attribs);
+      startDoc: function (_) {
+        stack = [];
+        ignoring = false;
+      },
+      startTag: function (tagName, attribs, out) {
+        if (ignoring) { return; }
+        if (!html4.ELEMENTS.hasOwnProperty(tagName)) { return; }
+        var eflags = html4.ELEMENTS[tagName];
+        if (eflags & html4.eflags.FOLDABLE) {
+          return;
+        } else if (eflags & html4.eflags.UNSAFE) {
+          ignoring = !(eflags & html4.eflags.EMPTY);
+          return;
+        }
+        attribs = sanitizeAttributes(tagName, attribs);
           // TODO(mikesamuel): relying on sanitizeAttributes not to
           // insert unsafe attribute names.
           if (attribs) {
@@ -5054,7 +5054,7 @@ var html = (function (html4) {
             out.push('<', tagName);
             for (var i = 0, n = attribs.length; i < n; i += 2) {
               var attribName = attribs[i],
-                  value = attribs[i + 1];
+              value = attribs[i + 1];
               if (value !== null && value !== void 0) {
                 out.push(' ', attribName, '="', escapeAttrib(value), '"');
               }
@@ -5070,60 +5070,60 @@ var html = (function (html4) {
           if (!html4.ELEMENTS.hasOwnProperty(tagName)) { return; }
           var eflags = html4.ELEMENTS[tagName];
           if (!(eflags & (html4.eflags.UNSAFE | html4.eflags.EMPTY
-                          | html4.eflags.FOLDABLE))) {
+            | html4.eflags.FOLDABLE))) {
             var index;
-            if (eflags & html4.eflags.OPTIONAL_ENDTAG) {
-              for (index = stack.length; --index >= 0;) {
-                var stackEl = stack[index];
-                if (stackEl === tagName) { break; }
-                if (!(html4.ELEMENTS[stackEl]
-                      & html4.eflags.OPTIONAL_ENDTAG)) {
+          if (eflags & html4.eflags.OPTIONAL_ENDTAG) {
+            for (index = stack.length; --index >= 0;) {
+              var stackEl = stack[index];
+              if (stackEl === tagName) { break; }
+              if (!(html4.ELEMENTS[stackEl]
+                & html4.eflags.OPTIONAL_ENDTAG)) {
                   // Don't pop non optional end tags looking for a match.
-                  return;
-                }
-              }
-            } else {
-              for (index = stack.length; --index >= 0;) {
-                if (stack[index] === tagName) { break; }
+                return;
               }
             }
+          } else {
+            for (index = stack.length; --index >= 0;) {
+              if (stack[index] === tagName) { break; }
+            }
+          }
             if (index < 0) { return; }  // Not opened.
             for (var i = stack.length; --i > index;) {
               var stackEl = stack[i];
               if (!(html4.ELEMENTS[stackEl]
-                    & html4.eflags.OPTIONAL_ENDTAG)) {
+                & html4.eflags.OPTIONAL_ENDTAG)) {
                 out.push('</', stackEl, '>');
-              }
             }
-            stack.length = index;
-            out.push('</', tagName, '>');
           }
-        },
-        pcdata: function (text, out) {
-          if (!ignoring) { out.push(text); }
-        },
-        rcdata: function (text, out) {
-          if (!ignoring) { out.push(text); }
-        },
-        cdata: function (text, out) {
-          if (!ignoring) { out.push(text); }
-        },
-        endDoc: function (out) {
-          for (var i = stack.length; --i >= 0;) {
-            out.push('</', stack[i], '>');
-          }
-          stack.length = 0;
+          stack.length = index;
+          out.push('</', tagName, '>');
         }
-      });
-  }
+      },
+      pcdata: function (text, out) {
+        if (!ignoring) { out.push(text); }
+      },
+      rcdata: function (text, out) {
+        if (!ignoring) { out.push(text); }
+      },
+      cdata: function (text, out) {
+        if (!ignoring) { out.push(text); }
+      },
+      endDoc: function (out) {
+        for (var i = stack.length; --i >= 0;) {
+          out.push('</', stack[i], '>');
+        }
+        stack.length = 0;
+      }
+    });
+}
 
   // From RFC3986
   var URI_SCHEME_RE = new RegExp(
-        "^" +
-      "(?:" +
+    "^" +
+    "(?:" +
         "([^:\/?#]+)" +         // scheme
-      ":)?"
-      );
+        ":)?"
+  );
 
   /**
    * Strips unsafe tags and attributes from html.
@@ -5137,7 +5137,7 @@ var html = (function (html4) {
    *     nmTokenPolicy is an identity transform
    * @return {string} html
    */
-  function sanitize(htmlText, opt_uriPolicy, opt_nmTokenPolicy) {
+   function sanitize(htmlText, opt_uriPolicy, opt_nmTokenPolicy) {
     var out = [];
     makeHtmlSanitizer(
       function sanitizeAttribs(tagName, attribs) {
@@ -5146,56 +5146,56 @@ var html = (function (html4) {
           var value = attribs[i + 1];
           var atype = null, attribKey;
           if ((attribKey = tagName + '::' + attribName,
-               html4.ATTRIBS.hasOwnProperty(attribKey))
-              || (attribKey = '*::' + attribName,
-                  html4.ATTRIBS.hasOwnProperty(attribKey))) {
+           html4.ATTRIBS.hasOwnProperty(attribKey))
+            || (attribKey = '*::' + attribName,
+              html4.ATTRIBS.hasOwnProperty(attribKey))) {
             atype = html4.ATTRIBS[attribKey];
-          }
-          if (atype !== null) {
-            switch (atype) {
-              case html4.atype.NONE: break;
-              case html4.atype.SCRIPT:
-              case html4.atype.STYLE:
-                value = null;
-                break;
-              case html4.atype.ID:
-              case html4.atype.IDREF:
-              case html4.atype.IDREFS:
-              case html4.atype.GLOBAL_NAME:
-              case html4.atype.LOCAL_NAME:
-              case html4.atype.CLASSES:
-                value = opt_nmTokenPolicy ? opt_nmTokenPolicy(value) : value;
-                break;
-              case html4.atype.URI:
-                var parsedUri = ('' + value).match(URI_SCHEME_RE);
-                if (!parsedUri) {
-                  value = null;
-                } else if (!parsedUri[1] ||
-                    WHITELISTED_SCHEMES.test(parsedUri[1])) {
-                  value = opt_uriPolicy && opt_uriPolicy(value);
-                } else {
-                  value = null;
-                }
-                break;
-              case html4.atype.URI_FRAGMENT:
-                if (value && '#' === value.charAt(0)) {
-                  value = opt_nmTokenPolicy ? opt_nmTokenPolicy(value) : value;
-                  if (value) { value = '#' + value; }
-                } else {
-                  value = null;
-                }
-                break;
-              default:
-                value = null;
-                break;
-            }
-          } else {
-            value = null;
-          }
-          attribs[i + 1] = value;
         }
-        return attribs;
-      })(htmlText, out);
+        if (atype !== null) {
+          switch (atype) {
+            case html4.atype.NONE: break;
+            case html4.atype.SCRIPT:
+            case html4.atype.STYLE:
+            value = null;
+            break;
+            case html4.atype.ID:
+            case html4.atype.IDREF:
+            case html4.atype.IDREFS:
+            case html4.atype.GLOBAL_NAME:
+            case html4.atype.LOCAL_NAME:
+            case html4.atype.CLASSES:
+            value = opt_nmTokenPolicy ? opt_nmTokenPolicy(value) : value;
+            break;
+            case html4.atype.URI:
+            var parsedUri = ('' + value).match(URI_SCHEME_RE);
+            if (!parsedUri) {
+              value = null;
+            } else if (!parsedUri[1] ||
+              WHITELISTED_SCHEMES.test(parsedUri[1])) {
+              value = opt_uriPolicy && opt_uriPolicy(value);
+            } else {
+              value = null;
+            }
+            break;
+            case html4.atype.URI_FRAGMENT:
+            if (value && '#' === value.charAt(0)) {
+              value = opt_nmTokenPolicy ? opt_nmTokenPolicy(value) : value;
+              if (value) { value = '#' + value; }
+            } else {
+              value = null;
+            }
+            break;
+            default:
+            value = null;
+            break;
+          }
+        } else {
+          value = null;
+        }
+        attribs[i + 1] = value;
+      }
+      return attribs;
+    })(htmlText, out);
     return out.join('');
   }
 
@@ -5238,34 +5238,34 @@ html4.ATTRIBS['video::controls'] = 0;
 // Attribution
 // -----------
 wax.attribution = function() {
-    var a = {};
+  var a = {};
 
-    var container = document.createElement('div');
-    container.className = 'map-attribution';
+  var container = document.createElement('div');
+  container.className = 'map-attribution';
 
-    a.content = function(x) {
-        if (typeof x === 'undefined') return container.innerHTML;
-        container.innerHTML = wax.u.sanitize(x);
-        return this;
-    };
+  a.content = function(x) {
+    if (typeof x === 'undefined') return container.innerHTML;
+    container.innerHTML = wax.u.sanitize(x);
+    return this;
+  };
 
-    a.element = function() {
-        return container;
-    };
+  a.element = function() {
+    return container;
+  };
 
-    a.init = function() {
-        return this;
-    };
+  a.init = function() {
+    return this;
+  };
 
-    return a;
+  return a;
 };
 wax = wax || {};
 
 // Attribution
 // -----------
 wax.bwdetect = function(options, callback) {
-    var detector = {},
-        threshold = options.threshold || 400,
+  var detector = {},
+  threshold = options.threshold || 400,
         // test image: 30.29KB
         testImage = 'http://a.tiles.mapbox.com/mapbox/1.0.0/blue-marble-topo-bathy-jul/0/0/0.png?preventcache=' + (+new Date()),
         // High-bandwidth assumed
@@ -5275,91 +5275,91 @@ wax.bwdetect = function(options, callback) {
         // Alternative versions
         auto = options.auto === undefined ? true : options.auto;
 
-    function bwTest() {
-        wax.bw = -1;
-        var im = new Image();
-        im.src = testImage;
-        var first = true;
-        var timeout = setTimeout(function() {
+        function bwTest() {
+          wax.bw = -1;
+          var im = new Image();
+          im.src = testImage;
+          var first = true;
+          var timeout = setTimeout(function() {
             if (first && wax.bw == -1) {
-                detector.bw(0);
-                first = false;
+              detector.bw(0);
+              first = false;
             }
-        }, threshold);
-        im.onload = function() {
+          }, threshold);
+          im.onload = function() {
             if (first && wax.bw == -1) {
-                clearTimeout(timeout);
-                detector.bw(1);
-                first = false;
+              clearTimeout(timeout);
+              detector.bw(1);
+              first = false;
             }
-        };
-    }
+          };
+        }
 
-    detector.bw = function(x) {
-        if (!arguments.length) return bw;
-        var oldBw = bw;
-        if (wax.bwlisteners && wax.bwlisteners.length) (function () {
+        detector.bw = function(x) {
+          if (!arguments.length) return bw;
+          var oldBw = bw;
+          if (wax.bwlisteners && wax.bwlisteners.length) (function () {
             listeners = wax.bwlisteners;
             wax.bwlisteners = [];
             for (i = 0; i < listeners; i++) {
-                listeners[i](x);
+              listeners[i](x);
             }
-        })();
-        wax.bw = x;
+          })();
+          wax.bw = x;
 
-        if (bw != (bw = x)) callback(x);
-    };
+          if (bw != (bw = x)) callback(x);
+        };
 
-    detector.add = function() {
-        if (auto) bwTest();
-        return this;
-    };
+        detector.add = function() {
+          if (auto) bwTest();
+          return this;
+        };
 
-    if (wax.bw == -1) {
-      wax.bwlisteners = wax.bwlisteners || [];
-      wax.bwlisteners.push(detector.bw);
-    } else if (wax.bw !== undefined) {
-        detector.bw(wax.bw);
-    } else {
-        detector.add();
-    }
-    return detector;
-};
+        if (wax.bw == -1) {
+          wax.bwlisteners = wax.bwlisteners || [];
+          wax.bwlisteners.push(detector.bw);
+        } else if (wax.bw !== undefined) {
+          detector.bw(wax.bw);
+        } else {
+          detector.add();
+        }
+        return detector;
+      };
 // Formatter
 // ---------
 //
 // This code is no longer the recommended code path for Wax -
 // see `template.js`, a safe implementation of Mustache templates.
 wax.formatter = function(x) {
-    var formatter = {},
-        f;
+  var formatter = {},
+  f;
 
     // Prevent against just any input being used.
     if (x && typeof x === 'string') {
-        try {
+      try {
             // Ugly, dangerous use of eval.
             eval('f = ' + x);
-        } catch (e) {
+          } catch (e) {
             if (console) console.log(e);
+          }
+        } else if (x && typeof x === 'function') {
+          f = x;
+        } else {
+          f = function() {};
         }
-    } else if (x && typeof x === 'function') {
-        f = x;
-    } else {
-        f = function() {};
-    }
 
     // Wrap the given formatter function in order to
     // catch exceptions that it may throw.
     formatter.format = function(options, data) {
-        try {
-            return wax.u.sanitize(f(options, data));
-        } catch (e) {
-            if (console) console.log(e);
-        }
+      try {
+        return wax.u.sanitize(f(options, data));
+      } catch (e) {
+        if (console) console.log(e);
+      }
     };
 
     return formatter;
-};
+  };
 // GridInstance
 // ------------
 // GridInstances are queryable, fully-formed
@@ -5367,41 +5367,41 @@ wax.formatter = function(x) {
 //
 // This code ignores format of 1.1-1.2
 wax.gi = function(grid_tile, options) {
-    options = options || {};
+  options = options || {};
     // resolution is the grid-elements-per-pixel ratio of gridded data.
     // The size of a tile element. For now we expect tiles to be squares.
     var instance = {},
-        resolution = options.resolution || 4,
-        tileSize = options.tileSize || 256;
+    resolution = options.resolution || 4,
+    tileSize = options.tileSize || 256;
 
     // Resolve the UTF-8 encoding stored in grids to simple
     // number values.
     // See the [utfgrid spec](https://github.com/mapbox/utfgrid-spec)
     // for details.
     function resolveCode(key) {
-        if (key >= 93) key--;
-        if (key >= 35) key--;
-        key -= 32;
-        return key;
+      if (key >= 93) key--;
+      if (key >= 35) key--;
+      key -= 32;
+      return key;
     }
 
     instance.grid_tile = function() {
-        return grid_tile;
+      return grid_tile;
     };
 
     instance.getKey = function(x, y) {
-        if (!(grid_tile && grid_tile.grid)) return;
-        if ((y < 0) || (x < 0)) return;
-        if ((Math.floor(y) >= tileSize) ||
-            (Math.floor(x) >= tileSize)) return;
+      if (!(grid_tile && grid_tile.grid)) return;
+      if ((y < 0) || (x < 0)) return;
+      if ((Math.floor(y) >= tileSize) ||
+        (Math.floor(x) >= tileSize)) return;
         // Find the key in the grid. The above calls should ensure that
         // the grid's array is large enough to make this work.
         return resolveCode(grid_tile.grid[
-           Math.floor((y) / resolution)
-        ].charCodeAt(
+         Math.floor((y) / resolution)
+         ].charCodeAt(
            Math.floor((x) / resolution)
-        ));
-    };
+           ));
+      };
 
     // Lower-level than tileFeature - has nothing to do
     // with the DOM. Takes a px offset from 0, 0 of a grid.
@@ -5409,28 +5409,28 @@ wax.gi = function(grid_tile, options) {
         // Find the key in the grid. The above calls should ensure that
         // the grid's array is large enough to make this work.
         var key = this.getKey(x, y),
-            keys = grid_tile.keys;
+        keys = grid_tile.keys;
 
         if (keys &&
-            keys[key] &&
-            grid_tile.data[keys[key]]) {
-            return grid_tile.data[keys[key]];
-        }
+          keys[key] &&
+          grid_tile.data[keys[key]]) {
+          return grid_tile.data[keys[key]];
+      }
     };
 
     // Get a feature:
     // * `x` and `y`: the screen coordinates of an event
     // * `tile_element`: a DOM element of a tile, from which we can get an offset.
     instance.tileFeature = function(x, y, tile_element) {
-        if (!grid_tile) return;
+      if (!grid_tile) return;
         // IE problem here - though recoverable, for whatever reason
         var offset = wax.u.offset(tile_element);
-            feature = this.gridFeature(x - offset.left, y - offset.top);
+        feature = this.gridFeature(x - offset.left, y - offset.top);
         return feature;
-    };
+      };
 
-    return instance;
-};
+      return instance;
+    };
 // GridManager
 // -----------
 // Generally one GridManager will be used per map.
@@ -5440,162 +5440,162 @@ wax.gi = function(grid_tile, options) {
 // The default is 4.
 wax.gm = function() {
 
-    var resolution = 4,
-        grid_tiles = {},
-        manager = {},
-        tilejson,
-        formatter;
+  var resolution = 4,
+  grid_tiles = {},
+  manager = {},
+  tilejson,
+  formatter;
 
-    var gridUrl = function(url) {
-        if (url) {
-            return url.replace(/(\.png|\.jpg|\.jpeg)(\d*)/, '.grid.json');
-        }
-    };
-
-    function templatedGridUrl(template) {
-        if (typeof template === 'string') template = [template];
-        return function templatedGridFinder(url) {
-            if (!url) return;
-            var rx = new RegExp('/(\\d+)\\/(\\d+)\\/(\\d+)\\.[\\w\\._]+');
-            var xyz = rx.exec(url);
-            if (!xyz) return;
-            return template[parseInt(xyz[2], 10) % template.length]
-                .replace(/\{z\}/g, xyz[1])
-                .replace(/\{x\}/g, xyz[2])
-                .replace(/\{y\}/g, xyz[3]);
-        };
+  var gridUrl = function(url) {
+    if (url) {
+      return url.replace(/(\.png|\.jpg|\.jpeg)(\d*)/, '.grid.json');
     }
+  };
 
-    manager.formatter = function(x) {
-        if (!arguments.length) return formatter;
-        formatter =  wax.formatter(x);
-        return manager;
+  function templatedGridUrl(template) {
+    if (typeof template === 'string') template = [template];
+    return function templatedGridFinder(url) {
+      if (!url) return;
+      var rx = new RegExp('/(\\d+)\\/(\\d+)\\/(\\d+)\\.[\\w\\._]+');
+      var xyz = rx.exec(url);
+      if (!xyz) return;
+      return template[parseInt(xyz[2], 10) % template.length]
+      .replace(/\{z\}/g, xyz[1])
+      .replace(/\{x\}/g, xyz[2])
+      .replace(/\{y\}/g, xyz[3]);
     };
+  }
 
-    manager.template = function(x) {
-        if (!arguments.length) return formatter;
-        formatter = wax.template(x);
-        return manager;
-    };
+  manager.formatter = function(x) {
+    if (!arguments.length) return formatter;
+    formatter =  wax.formatter(x);
+    return manager;
+  };
 
-    manager.gridUrl = function(x) {
+  manager.template = function(x) {
+    if (!arguments.length) return formatter;
+    formatter = wax.template(x);
+    return manager;
+  };
+
+  manager.gridUrl = function(x) {
         // Getter-setter
         if (!arguments.length) return gridUrl;
 
         // Handle tilesets that don't support grids
         if (!x) {
-            gridUrl = function() { return null; };
+          gridUrl = function() { return null; };
         } else {
-            gridUrl = typeof x === 'function' ?
-                x : templatedGridUrl(x);
+          gridUrl = typeof x === 'function' ?
+          x : templatedGridUrl(x);
         }
         return manager;
-    };
+      };
 
-    manager.getGrid = function(url, callback) {
+      manager.getGrid = function(url, callback) {
         var gurl = gridUrl(url);
         if (!formatter || !gurl) return callback(null, null);
 
         wax.request.get(gurl, function(err, t) {
-            if (err) return callback(err, null);
-            callback(null, wax.gi(t, {
-                formatter: formatter,
-                resolution: resolution
-            }));
+          if (err) return callback(err, null);
+          callback(null, wax.gi(t, {
+            formatter: formatter,
+            resolution: resolution
+          }));
         });
         return manager;
-    };
+      };
 
-    manager.tilejson = function(x) {
+      manager.tilejson = function(x) {
         if (!arguments.length) return tilejson;
         // prefer templates over formatters
         if (x.template) {
-            manager.template(x.template);
+          manager.template(x.template);
         } else if (x.formatter) {
-            manager.formatter(x.formatter);
+          manager.formatter(x.formatter);
         } else {
             // In this case, we cannot support grids
             formatter = undefined;
-        }
-        manager.gridUrl(x.grids);
-        if (x.resolution) resolution = x.resolution;
-        tilejson = x;
-        return manager;
-    };
+          }
+          manager.gridUrl(x.grids);
+          if (x.resolution) resolution = x.resolution;
+          tilejson = x;
+          return manager;
+        };
 
-    return manager;
-};
-wax = wax || {};
+        return manager;
+      };
+      wax = wax || {};
 
 // Hash
 // ----
 wax.hash = function(options) {
-    options = options || {};
+  options = options || {};
 
     var s0, // old hash
-        hash = {},
+    hash = {},
         lat = 90 - 1e-8;  // allowable latitude range
 
-    function getState() {
-        return location.hash.substring(1);
-    }
+        function getState() {
+          return location.hash.substring(1);
+        }
 
-    function pushState(state) {
-        var l = window.location;
-        l.replace(l.toString().replace((l.hash || /$/), '#' + state));
-    }
+        function pushState(state) {
+          var l = window.location;
+          l.replace(l.toString().replace((l.hash || /$/), '#' + state));
+        }
 
-    function parseHash(s) {
-        var args = s.split('/');
-        for (var i = 0; i < args.length; i++) {
+        function parseHash(s) {
+          var args = s.split('/');
+          for (var i = 0; i < args.length; i++) {
             args[i] = Number(args[i]);
             if (isNaN(args[i])) return true;
-        }
-        if (args.length < 3) {
+          }
+          if (args.length < 3) {
             // replace bogus hash
             return true;
-        } else if (args.length == 3) {
+          } else if (args.length == 3) {
             options.setCenterZoom(args);
+          }
         }
-    }
 
-    function move() {
-        var s1 = options.getCenterZoom();
-        if (s0 !== s1) {
+        function move() {
+          var s1 = options.getCenterZoom();
+          if (s0 !== s1) {
             s0 = s1;
             // don't recenter the map!
             pushState(s0);
+          }
         }
-    }
 
-    function stateChange(state) {
+        function stateChange(state) {
         // ignore spurious hashchange events
         if (state === s0) return;
         if (parseHash(s0 = state)) {
             // replace bogus hash
             move();
+          }
         }
-    }
 
-    var _move = wax.u.throttle(move, 500);
+        var _move = wax.u.throttle(move, 500);
 
-    hash.add = function() {
-        stateChange(getState());
-        options.bindChange(_move);
+        hash.add = function() {
+          stateChange(getState());
+          options.bindChange(_move);
+          return hash;
+        };
+
+        hash.remove = function() {
+          options.unbindChange(_move);
+          return hash;
+        };
+
         return hash;
-    };
+      };
+      wax = wax || {};
 
-    hash.remove = function() {
-        options.unbindChange(_move);
-        return hash;
-    };
-
-    return hash;
-};
-wax = wax || {};
-
-wax.interaction = function() {
-    var gm = wax.gm(),
+      wax.interaction = function() {
+        var gm = wax.gm(),
         interaction = {},
         _downLock = false,
         _clickTimeout = null,
@@ -5611,41 +5611,41 @@ wax.interaction = function() {
         map,
         tileGrid;
 
-    var defaultEvents = {
-        mousemove: onMove,
-        touchstart: onDown,
-        mousedown: onDown
-    };
+        var defaultEvents = {
+          mousemove: onMove,
+          touchstart: onDown,
+          mousedown: onDown
+        };
 
-    var touchEnds = {
-        touchend: onUp,
-        touchmove: onUp,
-        touchcancel: touchCancel
-    };
+        var touchEnds = {
+          touchend: onUp,
+          touchmove: onUp,
+          touchcancel: touchCancel
+        };
 
     // Abstract getTile method. Depends on a tilegrid with
     // grid[ [x, y, tile] ] structure.
     function getTile(e) {
-        var g = grid();
-        for (var i = 0; i < g.length; i++) {
-            if ((g[i][0] < e.y) &&
-               ((g[i][0] + 256) > e.y) &&
-                (g[i][1] < e.x) &&
-               ((g[i][1] + 256) > e.x)) return g[i][2];
-        }
-        return false;
-    }
+      var g = grid();
+      for (var i = 0; i < g.length; i++) {
+        if ((g[i][0] < e.y) &&
+         ((g[i][0] + 256) > e.y) &&
+         (g[i][1] < e.x) &&
+         ((g[i][1] + 256) > e.x)) return g[i][2];
+      }
+    return false;
+  }
 
     // Clear the double-click timeout to prevent double-clicks from
     // triggering popups.
     function killTimeout() {
-        if (_clickTimeout) {
-            window.clearTimeout(_clickTimeout);
-            _clickTimeout = null;
-            return true;
-        } else {
-            return false;
-        }
+      if (_clickTimeout) {
+        window.clearTimeout(_clickTimeout);
+        _clickTimeout = null;
+        return true;
+      } else {
+        return false;
+      }
     }
 
     function onMove(e) {
@@ -5656,22 +5656,22 @@ wax.interaction = function() {
         var pos = wax.u.eventoffset(e);
 
         interaction.screen_feature(pos, function(feature) {
-            if (feature) {
-                bean.fire(interaction, 'on', {
-                    parent: parent(),
-                    data: feature,
-                    formatter: gm.formatter().format,
-                    e: e
-                });
-            } else {
-                bean.fire(interaction, 'off');
-            }
+          if (feature) {
+            bean.fire(interaction, 'on', {
+              parent: parent(),
+              data: feature,
+              formatter: gm.formatter().format,
+              e: e
+            });
+          } else {
+            bean.fire(interaction, 'off');
+          }
         });
-    }
+      }
 
-    function dragEnd() {
+      function dragEnd() {
         _downLock = false;
-    }
+      }
 
     // A handler for 'down' events - which means `mousedown` and `touchstart`
     function onDown(e) {
@@ -5684,29 +5684,29 @@ wax.interaction = function() {
         _downLock = true;
         _d = wax.u.eventoffset(e);
         if (e.type === 'mousedown') {
-            bean.add(document.body, 'click', onUp);
+          bean.add(document.body, 'click', onUp);
             // track mouse up to remove lockDown when the drags end
             bean.add(document.body, 'mouseup', dragEnd);
 
         // Only track single-touches. Double-touches will not affect this
         // control
-        } else if (e.type === 'touchstart' && e.touches.length === 1) {
+      } else if (e.type === 'touchstart' && e.touches.length === 1) {
             // Don't make the user click close if they hit another tooltip
             bean.fire(interaction, 'off');
             // Touch moves invalidate touches
             bean.add(e.srcElement, touchEnds);
+          }
         }
-    }
 
-    function touchCancel(e) {
-        bean.remove(e.srcElement, touchEnds);
-        _downLock = false;
-    }
+        function touchCancel(e) {
+          bean.remove(e.srcElement, touchEnds);
+          _downLock = false;
+        }
 
-    function onUp(e) {
-        var evt = {},
-            pos = wax.u.eventoffset(e);
-        _downLock = false;
+        function onUp(e) {
+          var evt = {},
+          pos = wax.u.eventoffset(e);
+          _downLock = false;
 
         // TODO: refine
         for (var key in e) {
@@ -5721,125 +5721,125 @@ wax.interaction = function() {
             // but also wax.u.eventoffset will have failed, since this touch
             // event doesn't have coordinates
             interaction.click(e, _d);
-        } else if (Math.round(pos.y / tol) === Math.round(_d.y / tol) &&
+          } else if (Math.round(pos.y / tol) === Math.round(_d.y / tol) &&
             Math.round(pos.x / tol) === Math.round(_d.x / tol)) {
             // Contain the event data in a closure.
             // Ignore double-clicks by ignoring clicks within 300ms of
             // each other.
             if(!_clickTimeout) {
               _clickTimeout = window.setTimeout(function() {
-                  _clickTimeout = null;
-                  interaction.click(evt, pos);
+                _clickTimeout = null;
+                interaction.click(evt, pos);
               }, 300);
             } else {
               killTimeout();
             }
+          }
+          return onUp;
         }
-        return onUp;
-    }
 
     // Handle a click event. Takes a second
     interaction.click = function(e, pos) {
-        interaction.screen_feature(pos, function(feature) {
-            if (feature) bean.fire(interaction, 'on', {
-                parent: parent(),
-                data: feature,
-                formatter: gm.formatter().format,
-                e: e
-            });
+      interaction.screen_feature(pos, function(feature) {
+        if (feature) bean.fire(interaction, 'on', {
+          parent: parent(),
+          data: feature,
+          formatter: gm.formatter().format,
+          e: e
         });
+      });
     };
 
     interaction.screen_feature = function(pos, callback) {
-        var tile = getTile(pos);
-        if (!tile) callback(null);
-        gm.getGrid(tile.src, function(err, g) {
-            if (err || !g) return callback(null);
-            var feature = g.tileFeature(pos.x, pos.y, tile);
-            callback(feature);
-        });
+      var tile = getTile(pos);
+      if (!tile) callback(null);
+      gm.getGrid(tile.src, function(err, g) {
+        if (err || !g) return callback(null);
+        var feature = g.tileFeature(pos.x, pos.y, tile);
+        callback(feature);
+      });
     };
 
     // set an attach function that should be
     // called when maps are set
     interaction.attach = function(x) {
-        if (!arguments.length) return attach;
-        attach = x;
-        return interaction;
+      if (!arguments.length) return attach;
+      attach = x;
+      return interaction;
     };
 
     interaction.detach = function(x) {
-        if (!arguments.length) return detach;
-        detach = x;
-        return interaction;
+      if (!arguments.length) return detach;
+      detach = x;
+      return interaction;
     };
 
     // Attach listeners to the map
     interaction.map = function(x) {
-        if (!arguments.length) return map;
-        map = x;
-        if (attach) attach(map);
-        bean.add(parent(), defaultEvents);
-        bean.add(parent(), 'touchstart', onDown);
-        return interaction;
+      if (!arguments.length) return map;
+      map = x;
+      if (attach) attach(map);
+      bean.add(parent(), defaultEvents);
+      bean.add(parent(), 'touchstart', onDown);
+      return interaction;
     };
 
     // set a grid getter for this control
     interaction.grid = function(x) {
-        if (!arguments.length) return grid;
-        grid = x;
-        return interaction;
+      if (!arguments.length) return grid;
+      grid = x;
+      return interaction;
     };
 
     // detach this and its events from the map cleanly
     interaction.remove = function(x) {
-        if (detach) detach(map);
-        bean.remove(parent(), defaultEvents);
-        bean.fire(interaction, 'remove');
-        return interaction;
+      if (detach) detach(map);
+      bean.remove(parent(), defaultEvents);
+      bean.fire(interaction, 'remove');
+      return interaction;
     };
 
     // get or set a tilejson chunk of json
     interaction.tilejson = function(x) {
-        if (!arguments.length) return gm.tilejson();
-        gm.tilejson(x);
-        return interaction;
+      if (!arguments.length) return gm.tilejson();
+      gm.tilejson(x);
+      return interaction;
     };
 
     // return the formatter, which has an exposed .format
     // function
     interaction.formatter = function() {
-        return gm.formatter();
+      return gm.formatter();
     };
 
     // ev can be 'on', 'off', fn is the handler
     interaction.on = function(ev, fn) {
-        bean.add(interaction, ev, fn);
-        return interaction;
+      bean.add(interaction, ev, fn);
+      return interaction;
     };
 
     // ev can be 'on', 'off', fn is the handler
     interaction.off = function(ev, fn) {
-        bean.remove(interaction, ev, fn);
-        return interaction;
+      bean.remove(interaction, ev, fn);
+      return interaction;
     };
 
     // Return or set the gridmanager implementation
     interaction.gridmanager = function(x) {
-        if (!arguments.length) return gm;
-        gm = x;
-        return interaction;
+      if (!arguments.length) return gm;
+      gm = x;
+      return interaction;
     };
 
     // parent should be a function that returns
     // the parent element of the map
     interaction.parent  = function(x) {
-        parent = x;
-        return interaction;
+      parent = x;
+      return interaction;
     };
 
     return interaction;
-};
+  };
 // Wax Legend
 // ----------
 
@@ -5847,176 +5847,176 @@ wax.interaction = function() {
 var wax = wax || {};
 
 wax.legend = function() {
-    var element,
-        legend = {},
-        container;
+  var element,
+  legend = {},
+  container;
 
-    legend.element = function() {
-        return container;
-    };
+  legend.element = function() {
+    return container;
+  };
 
-    legend.content = function(content) {
-        if (!arguments.length) return element.innerHTML;
+  legend.content = function(content) {
+    if (!arguments.length) return element.innerHTML;
 
-        element.innerHTML = wax.u.sanitize(content);
-        element.style.display = 'block';
-        if (element.innerHTML === '') {
-            element.style.display = 'none';
-        }
+    element.innerHTML = wax.u.sanitize(content);
+    element.style.display = 'block';
+    if (element.innerHTML === '') {
+      element.style.display = 'none';
+    }
 
-        return legend;
-    };
+    return legend;
+  };
 
-    legend.add = function() {
-        container = document.createElement('div');
-        container.className = 'map-legends wax-legends';
+  legend.add = function() {
+    container = document.createElement('div');
+    container.className = 'map-legends wax-legends';
 
-        element = container.appendChild(document.createElement('div'));
-        element.className = 'map-legend wax-legend';
-        element.style.display = 'none';
-        return legend;
-    };
+    element = container.appendChild(document.createElement('div'));
+    element.className = 'map-legend wax-legend';
+    element.style.display = 'none';
+    return legend;
+  };
 
-    return legend.add();
+  return legend.add();
 };
 var wax = wax || {};
 
 wax.location = function() {
 
-    var t = {};
+  var t = {};
 
-    function on(o) {
-        if ((o.e.type === 'mousemove' || !o.e.type)) {
-            return;
-        } else {
-            var loc = o.formatter({ format: 'location' }, o.data);
-            if (loc) {
-                window.top.location.href = loc;
-            }
-        }
+  function on(o) {
+    if ((o.e.type === 'mousemove' || !o.e.type)) {
+      return;
+    } else {
+      var loc = o.formatter({ format: 'location' }, o.data);
+      if (loc) {
+        window.top.location.href = loc;
+      }
     }
+  }
 
-    t.events = function() {
-        return {
-            on: on
-        };
+  t.events = function() {
+    return {
+      on: on
     };
+  };
 
-    return t;
+  return t;
 
 };
 var wax = wax || {};
 wax.movetip = {};
 
 wax.movetip = function() {
-    var popped = false,
-        t = {},
-        _tooltipOffset,
-        _contextOffset,
-        tooltip,
-        parent;
+  var popped = false,
+  t = {},
+  _tooltipOffset,
+  _contextOffset,
+  tooltip,
+  parent;
 
-    function moveTooltip(e) {
-       var eo = wax.u.eventoffset(e);
+  function moveTooltip(e) {
+   var eo = wax.u.eventoffset(e);
        // faux-positioning
        if ((_tooltipOffset.height + eo.y) >
-           (_contextOffset.top + _contextOffset.height) &&
-           (_contextOffset.height > _tooltipOffset.height)) {
-           eo.y -= _tooltipOffset.height;
-           tooltip.className += ' flip-y';
-       }
+         (_contextOffset.top + _contextOffset.height) &&
+         (_contextOffset.height > _tooltipOffset.height)) {
+         eo.y -= _tooltipOffset.height;
+       tooltip.className += ' flip-y';
+     }
 
        // faux-positioning
        if ((_tooltipOffset.width + eo.x) >
-           (_contextOffset.left + _contextOffset.width)) {
-           eo.x -= _tooltipOffset.width;
-           tooltip.className += ' flip-x';
-       }
+         (_contextOffset.left + _contextOffset.width)) {
+         eo.x -= _tooltipOffset.width;
+       tooltip.className += ' flip-x';
+     }
 
-       tooltip.style.left = eo.x + 'px';
-       tooltip.style.top = eo.y + 'px';
-    }
+     tooltip.style.left = eo.x + 'px';
+     tooltip.style.top = eo.y + 'px';
+   }
 
     // Get the active tooltip for a layer or create a new one if no tooltip exists.
     // Hide any tooltips on layers underneath this one.
     function getTooltip(feature) {
-        var tooltip = document.createElement('div');
-        tooltip.className = 'map-tooltip map-tooltip-0';
-        tooltip.innerHTML = feature;
-        return tooltip;
+      var tooltip = document.createElement('div');
+      tooltip.className = 'map-tooltip map-tooltip-0';
+      tooltip.innerHTML = feature;
+      return tooltip;
     }
 
     // Hide a given tooltip.
     function hide() {
-        if (tooltip) {
-          tooltip.parentNode.removeChild(tooltip);
-          tooltip = null;
-        }
+      if (tooltip) {
+        tooltip.parentNode.removeChild(tooltip);
+        tooltip = null;
+      }
     }
 
     function on(o) {
-        var content;
-        if (popped) return;
-        if ((o.e.type === 'mousemove' || !o.e.type)) {
-            content = o.formatter({ format: 'teaser' }, o.data);
-            if (!content) return;
-            hide();
-            parent.style.cursor = 'pointer';
-            tooltip = document.body.appendChild(getTooltip(content));
-        } else {
-            content = o.formatter({ format: 'teaser' }, o.data);
-            if (!content) return;
-            hide();
-            var tt = document.body.appendChild(getTooltip(content));
-            tt.className += ' map-popup';
+      var content;
+      if (popped) return;
+      if ((o.e.type === 'mousemove' || !o.e.type)) {
+        content = o.formatter({ format: 'teaser' }, o.data);
+        if (!content) return;
+        hide();
+        parent.style.cursor = 'pointer';
+        tooltip = document.body.appendChild(getTooltip(content));
+      } else {
+        content = o.formatter({ format: 'teaser' }, o.data);
+        if (!content) return;
+        hide();
+        var tt = document.body.appendChild(getTooltip(content));
+        tt.className += ' map-popup';
 
-            var close = tt.appendChild(document.createElement('a'));
-            close.href = '#close';
-            close.className = 'close';
-            close.innerHTML = 'Close';
+        var close = tt.appendChild(document.createElement('a'));
+        close.href = '#close';
+        close.className = 'close';
+        close.innerHTML = 'Close';
 
-            popped = true;
+        popped = true;
 
-            tooltip = tt;
+        tooltip = tt;
 
-            _tooltipOffset = wax.u.offset(tooltip);
-            _contextOffset = wax.u.offset(parent);
-            moveTooltip(o.e);
+        _tooltipOffset = wax.u.offset(tooltip);
+        _contextOffset = wax.u.offset(parent);
+        moveTooltip(o.e);
 
-            bean.add(close, 'click touchend', function closeClick(e) {
-                e.stop();
-                hide();
-                popped = false;
-            });
-        }
-        if (tooltip) {
-          _tooltipOffset = wax.u.offset(tooltip);
-          _contextOffset = wax.u.offset(parent);
-          moveTooltip(o.e);
-        }
+        bean.add(close, 'click touchend', function closeClick(e) {
+          e.stop();
+          hide();
+          popped = false;
+        });
+      }
+      if (tooltip) {
+        _tooltipOffset = wax.u.offset(tooltip);
+        _contextOffset = wax.u.offset(parent);
+        moveTooltip(o.e);
+      }
 
     }
 
     function off() {
-        parent.style.cursor = 'default';
-        if (!popped) hide();
+      parent.style.cursor = 'default';
+      if (!popped) hide();
     }
 
     t.parent = function(x) {
-        if (!arguments.length) return parent;
-        parent = x;
-        return t;
+      if (!arguments.length) return parent;
+      parent = x;
+      return t;
     };
 
     t.events = function() {
-        return {
-            on: on,
-            off: off
-        };
+      return {
+        on: on,
+        off: off
+      };
     };
 
     return t;
-};
+  };
 
 // Wax GridUtil
 // ------------
@@ -6028,151 +6028,145 @@ var wax = wax || {};
 // -------
 // Request data cache. `callback(data)` where `data` is the response data.
 wax.request = {
-    cache: {},
-    locks: {},
-    promises: {},
-    get: function(url, callback) {
+  cache: {},
+  locks: {},
+  promises: {},
+  get: function(url, callback) {
         // Cache hit.
         if (this.cache[url]) {
-            return callback(this.cache[url][0], this.cache[url][1]);
+          return callback(this.cache[url][0], this.cache[url][1]);
         // Cache miss.
-        } else {
-            this.promises[url] = this.promises[url] || [];
-            this.promises[url].push(callback);
+      } else {
+        this.promises[url] = this.promises[url] || [];
+        this.promises[url].push(callback);
             // Lock hit.
             if (this.locks[url]) return;
             // Request.
             var that = this;
             this.locks[url] = true;
             reqwest({
-                url: url + (~url.indexOf('?') ? '&' : '?') + 'callback=?',
-                type: 'jsonp',
-                success: function(data) {
-                    that.locks[url] = false;
-                    that.cache[url] = [null, data];
-                    for (var i = 0; i < that.promises[url].length; i++) {
-                        that.promises[url][i](that.cache[url][0], that.cache[url][1]);
-                    }
-                },
-                error: function(err) {
-                    that.locks[url] = false;
-                    that.cache[url] = [err, null];
-                    for (var i = 0; i < that.promises[url].length; i++) {
-                        that.promises[url][i](that.cache[url][0], that.cache[url][1]);
-                    }
+              url: url + (~url.indexOf('?') ? '&' : '?') + 'callback=?',
+              type: 'jsonp',
+              success: function(data) {
+                that.locks[url] = false;
+                that.cache[url] = [null, data];
+                for (var i = 0; i < that.promises[url].length; i++) {
+                  that.promises[url][i](that.cache[url][0], that.cache[url][1]);
                 }
+              },
+              error: function(err) {
+                that.locks[url] = false;
+                that.cache[url] = [err, null];
+                for (var i = 0; i < that.promises[url].length; i++) {
+                  that.promises[url][i](that.cache[url][0], that.cache[url][1]);
+                }
+              }
             });
+          }
         }
-    }
-};
+      };
 // Templating
 // ---------
 wax.template = function(x) {
-    var template = {};
+  var template = {};
 
     // Clone the data object such that the '__[format]__' key is only
     // set for this instance of templating.
     template.format = function(options, data) {
-        var clone = {};
-        for (var key in data) {
-            clone[key] = data[key];
-        }
-        if (options.format) {
-            clone['__' + options.format + '__'] = true;
-        }
-        return wax.u.sanitize(Mustache.to_html(x, clone));
+      var clone = {};
+      for (var key in data) {
+        clone[key] = data[key];
+      }
+      if (options.format) {
+        clone['__' + options.format + '__'] = true;
+      }
+      return wax.u.sanitize(Mustache.to_html(x, clone));
     };
 
     return template;
-};
-if (!wax) var wax = {};
+  };
+  if (!wax) var wax = {};
 
 // A wrapper for reqwest jsonp to easily load TileJSON from a URL.
 wax.tilejson = function(url, callback) {
-    reqwest({
-        url: url + (~url.indexOf('?') ? '&' : '?') + 'callback=?',
-        type: 'jsonp',
-        success: callback,
-        error: callback
-    });
+  reqwest({
+    url: url + (~url.indexOf('?') ? '&' : '?') + 'callback=?',
+    type: 'jsonp',
+    success: callback,
+    error: callback
+  });
 };
 var wax = wax || {};
 wax.tooltip = {};
 
 wax.tooltip = function() {
-    var popped = false,
-        animate = false,
-        t = {},
-        tooltips = [],
-        _currentContent,
-        transitionEvent,
-        parent;
+  var popped = false,
+  animate = false,
+  t = {},
+  tooltips = [],
+  _currentContent,
+  transitionEvent,
+  parent;
 
-    if (document.body.style['-webkit-transition'] !== undefined) {
-        transitionEvent = 'webkitTransitionEnd';
-    } else if (document.body.style.MozTransition !== undefined) {
-        transitionEvent = 'transitionend';
-    }
+  if (document.body.style['-webkit-transition'] !== undefined) {
+    transitionEvent = 'webkitTransitionEnd';
+  } else if (document.body.style.MozTransition !== undefined) {
+    transitionEvent = 'transitionend';
+  }
 
     // Get the active tooltip for a layer or create a new one if no tooltip exists.
     // Hide any tooltips on layers underneath this one.
     function getTooltip(feature) {
-        var tooltip = document.createElement('div');
-        tooltip.className = 'map-tooltip map-tooltip-0 wax-tooltip';
-        tooltip.innerHTML = feature;
-        return tooltip;
+      var tooltip = document.createElement('div');
+      tooltip.className = 'map-tooltip map-tooltip-0 wax-tooltip';
+      tooltip.innerHTML = feature;
+      return tooltip;
     }
 
     function remove() {
-        if (this.parentNode) this.parentNode.removeChild(this);
+      if (this.parentNode) this.parentNode.removeChild(this);
     }
 
     // Hide a given tooltip.
     function hide() {
-        var _ct;
-        while (_ct = tooltips.pop()) {
-            if (animate && transitionEvent) {
+      var _ct;
+      while (_ct = tooltips.pop()) {
+        if (animate && transitionEvent) {
                 // This code assumes that transform-supporting browsers
                 // also support proper events. IE9 does both.
-                  bean.add(_ct, transitionEvent, remove);
-                  _ct.className += ' map-fade';
-            } else {
+                bean.add(_ct, transitionEvent, remove);
+                _ct.className += ' map-fade';
+              } else {
                 if (_ct.parentNode) _ct.parentNode.removeChild(_ct);
+              }
             }
-        }
-    }
+          }
 
-    function getWkpdData(title){
-     /* $.getJSON("http://fr.wikipedia.org/w/api.php?format=json&action=query&titles="+title+"&prop=extracts&callback=?", function(json) {
-          for (var key in json.query.pages) {
-            if (json.query.pages.hasOwnProperty(key)) {
-              $("#content p").html(json.query.pages[key].extract);
-              return;
-            }
-          } 
-      });*/
+          function wkpdHTMLResult(json){
+            var pages = json.query.pages;
+            var pageKey = Object.keys(pages)[0];
+            $("#content p").html(pages[pageKey].extract);
+          }
 
-      $.ajax(
-      {
-        url: "http://fr.wikipedia.org/w/api.php?format=json&action=query&titles="+title+"&prop=extracts",
-        dataType: "jsonp",
-        //async: false,
-        success: function(json)
-        {
-           for (var key in json.query.pages) {
-            if (json.query.pages.hasOwnProperty(key)) {
-              $("#content p").html(json.query.pages[key].extract);
-              return;
-            }
-          } 
-        }
-      });
-    }
+          function getWkpdData(t){
+            $.ajax(
+            {
+              url: "http://fr.wikipedia.org/w/api.php?format=json&action=query&titles="+t+"&prop=extracts",
+              dataType: "jsonp",
+              success: function(json)
+              {
+                var pages = json.query.pages;
+                var pageKey = Object.keys(pages)[0];
+                var $content = $("#content p");
+                $content.html(pages[pageKey].extract);
+              }
+            });
+          }
 
-    function on(o) {
-        var content;
-        if (o.e.type === 'mousemove' || !o.e.type) {
-            if (!popped) {
+          function on(o) {
+            var content;
+            if (o.e.type === 'mousemove' || !o.e.type) {
+              if (!popped) {
                 content = o.content || o.formatter({ format: 'teaser' }, o.data);
                 if (!content || content == _currentContent) return;
                 // TSC 
@@ -6182,12 +6176,12 @@ wax.tooltip = function() {
                 tooltips.push(parent.appendChild(getTooltip(content)));
                 _currentContent = content;
                 //TSC 
-                $("#content h1").html(content);
-            }
-        } else {
-            content = o.content || o.formatter({ format: 'full' }, o.data);
-            if (!content) {
-              if (o.e.type && o.e.type.match(/touch/)) {
+                $("#content h1").html(o.data.name);
+              }
+            } else {
+              content = o.content || o.formatter({ format: 'full' }, o.data);
+              if (!content) {
+                if (o.e.type && o.e.type.match(/touch/)) {
                 // fallback possible
                 content = o.content || o.formatter({ format: 'teaser' }, o.data);
               }
@@ -6208,45 +6202,45 @@ wax.tooltip = function() {
             tooltips.push(tt);
 
             bean.add(close, 'touchstart mousedown', function(e) {
-                e.stop();
+              e.stop();
             });
 
             bean.add(close, 'click touchend', function closeClick(e) {
-                e.stop();
-                hide();
-                popped = false;
+              e.stop();
+              hide();
+              popped = false;
             });
+          }
         }
-    }
 
-    function off() {
-        parent.style.cursor = 'default';
-        _currentContent = null;
-        if (!popped) hide();
-    }
+        function off() {
+          parent.style.cursor = 'default';
+          _currentContent = null;
+          if (!popped) hide();
+        }
 
-    t.parent = function(x) {
-        if (!arguments.length) return parent;
-        parent = x;
-        return t;
-    };
+        t.parent = function(x) {
+          if (!arguments.length) return parent;
+          parent = x;
+          return t;
+        };
 
-    t.animate = function(x) {
-        if (!arguments.length) return animate;
-        animate = x;
-        return t;
-    };
+        t.animate = function(x) {
+          if (!arguments.length) return animate;
+          animate = x;
+          return t;
+        };
 
-    t.events = function() {
-        return {
+        t.events = function() {
+          return {
             on: on,
             off: off
+          };
         };
-    };
 
-    return t;
-};
-var wax = wax || {};
+        return t;
+      };
+      var wax = wax || {};
 
 // Utils are extracted from other libraries or
 // written from scratch to plug holes in browser compatibility.
@@ -6258,39 +6252,39 @@ wax.u = {
         // Okay, so fall back to styles if offsetWidth and height are botched
         // by Firefox.
         var width = el.offsetWidth || parseInt(el.style.width, 10),
-            height = el.offsetHeight || parseInt(el.style.height, 10),
-            doc_body = document.body,
-            top = 0,
-            left = 0;
+        height = el.offsetHeight || parseInt(el.style.height, 10),
+        doc_body = document.body,
+        top = 0,
+        left = 0;
 
         var calculateOffset = function(el) {
-            if (el === doc_body || el === document.documentElement) return;
-            top += el.offsetTop;
-            left += el.offsetLeft;
+          if (el === doc_body || el === document.documentElement) return;
+          top += el.offsetTop;
+          left += el.offsetLeft;
 
-            var style = el.style.transform ||
-                el.style.WebkitTransform ||
-                el.style.OTransform ||
-                el.style.MozTransform ||
-                el.style.msTransform;
+          var style = el.style.transform ||
+          el.style.WebkitTransform ||
+          el.style.OTransform ||
+          el.style.MozTransform ||
+          el.style.msTransform;
 
-            if (style) {
-                var match;
-                if (match = style.match(/translate\((.+)[px]?, (.+)[px]?\)/)) {
-                    top += parseInt(match[2], 10);
-                    left += parseInt(match[1], 10);
-                } else if (match = style.match(/translate3d\((.+)[px]?, (.+)[px]?, (.+)[px]?\)/)) {
-                    top += parseInt(match[2], 10);
-                    left += parseInt(match[1], 10);
-                } else if (match = style.match(/matrix3d\(([\-\d,\s]+)\)/)) {
-                    var pts = match[1].split(',');
-                    top += parseInt(pts[13], 10);
-                    left += parseInt(pts[12], 10);
-                } else if (match = style.match(/matrix\(.+, .+, .+, .+, (.+), (.+)\)/)) {
-                    top += parseInt(match[2], 10);
-                    left += parseInt(match[1], 10);
-                }
+          if (style) {
+            var match;
+            if (match = style.match(/translate\((.+)[px]?, (.+)[px]?\)/)) {
+              top += parseInt(match[2], 10);
+              left += parseInt(match[1], 10);
+            } else if (match = style.match(/translate3d\((.+)[px]?, (.+)[px]?, (.+)[px]?\)/)) {
+              top += parseInt(match[2], 10);
+              left += parseInt(match[1], 10);
+            } else if (match = style.match(/matrix3d\(([\-\d,\s]+)\)/)) {
+              var pts = match[1].split(',');
+              top += parseInt(pts[13], 10);
+              left += parseInt(pts[12], 10);
+            } else if (match = style.match(/matrix\(.+, .+, .+, .+, (.+), (.+)\)/)) {
+              top += parseInt(match[2], 10);
+              left += parseInt(match[1], 10);
             }
+          }
         };
 
         // from jquery, offset.js
@@ -6309,11 +6303,11 @@ wax.u = {
         } else {
           calculateOffset(el);
           try {
-              while (el = el.offsetParent) { calculateOffset(el); }
+            while (el = el.offsetParent) { calculateOffset(el); }
           } catch(e) {
               // Hello, internet explorer.
+            }
           }
-        }
 
         // Offsets from the body
         top += doc_body.offsetTop;
@@ -6325,146 +6319,146 @@ wax.u = {
         // Firefox and other weirdos. Similar technique to jQuery's
         // `doesNotIncludeMarginInBodyOffset`.
         var htmlComputed = document.defaultView ?
-            window.getComputedStyle(doc_body.parentNode, null) :
-            doc_body.parentNode.currentStyle;
+        window.getComputedStyle(doc_body.parentNode, null) :
+        doc_body.parentNode.currentStyle;
         if (doc_body.parentNode.offsetTop !==
-            parseInt(htmlComputed.marginTop, 10) &&
-            !isNaN(parseInt(htmlComputed.marginTop, 10))) {
-            top += parseInt(htmlComputed.marginTop, 10);
-            left += parseInt(htmlComputed.marginLeft, 10);
-        }
+          parseInt(htmlComputed.marginTop, 10) &&
+          !isNaN(parseInt(htmlComputed.marginTop, 10))) {
+          top += parseInt(htmlComputed.marginTop, 10);
+        left += parseInt(htmlComputed.marginLeft, 10);
+      }
 
-        return {
-            top: top,
-            left: left,
-            height: height,
-            width: width
-        };
+      return {
+        top: top,
+        left: left,
+        height: height,
+        width: width
+      };
     },
 
     '$': function(x) {
-        return (typeof x === 'string') ?
-            document.getElementById(x) :
-            x;
+      return (typeof x === 'string') ?
+      document.getElementById(x) :
+      x;
     },
 
     // From quirksmode: normalize the offset of an event from the top-left
     // of the page.
     eventoffset: function(e) {
-        var posx = 0;
-        var posy = 0;
-        if (!e) { e = window.event; }
-        if (e.pageX || e.pageY) {
+      var posx = 0;
+      var posy = 0;
+      if (!e) { e = window.event; }
+      if (e.pageX || e.pageY) {
             // Good browsers
             return {
-                x: e.pageX,
-                y: e.pageY
+              x: e.pageX,
+              y: e.pageY
             };
-        } else if (e.clientX || e.clientY) {
+          } else if (e.clientX || e.clientY) {
             // Internet Explorer
             return {
-                x: e.clientX,
-                y: e.clientY
+              x: e.clientX,
+              y: e.clientY
             };
-        } else if (e.touches && e.touches.length === 1) {
+          } else if (e.touches && e.touches.length === 1) {
             // Touch browsers
             return {
-                x: e.touches[0].pageX,
-                y: e.touches[0].pageY
+              x: e.touches[0].pageX,
+              y: e.touches[0].pageY
             };
-        }
-    },
+          }
+        },
 
     // Ripped from underscore.js
     // Internal function used to implement `_.throttle` and `_.debounce`.
     limit: function(func, wait, debounce) {
-        var timeout;
-        return function() {
-            var context = this, args = arguments;
-            var throttler = function() {
-                timeout = null;
-                func.apply(context, args);
-            };
-            if (debounce) clearTimeout(timeout);
-            if (debounce || !timeout) timeout = setTimeout(throttler, wait);
+      var timeout;
+      return function() {
+        var context = this, args = arguments;
+        var throttler = function() {
+          timeout = null;
+          func.apply(context, args);
         };
+        if (debounce) clearTimeout(timeout);
+        if (debounce || !timeout) timeout = setTimeout(throttler, wait);
+      };
     },
 
     // Returns a function, that, when invoked, will only be triggered at most once
     // during a given window of time.
     throttle: function(func, wait) {
-        return this.limit(func, wait, false);
+      return this.limit(func, wait, false);
     },
 
     sanitize: function(content) {
-        if (!content) return '';
+      if (!content) return '';
 
-        function urlX(url) {
+      function urlX(url) {
             // Data URIs are subject to a bug in Firefox
             // https://bugzilla.mozilla.org/show_bug.cgi?id=255107
             // which let them be a vector. But WebKit does 'the right thing'
             // or at least 'something' about this situation, so we'll tolerate
             // them.
             if (/^(https?:\/\/|data:image)/.test(url)) {
-                return url;
+              return url;
             }
+          }
+
+          function idX(id) { return id; }
+
+          return html_sanitize(content, urlX, idX);
         }
+      };
+      wax = wax || {};
+      wax.mm = wax.mm || {};
 
-        function idX(id) { return id; }
-
-        return html_sanitize(content, urlX, idX);
-    }
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
-
-wax.mm.attribution = function() {
-    var map,
+      wax.mm.attribution = function() {
+        var map,
         a = {},
         container = document.createElement('div');
 
-    container.className = 'map-attribution map-mm';
+        container.className = 'map-attribution map-mm';
 
-    a.content = function(x) {
-        if (typeof x === 'undefined') return container.innerHTML;
-        container.innerHTML = wax.u.sanitize(x);
+        a.content = function(x) {
+          if (typeof x === 'undefined') return container.innerHTML;
+          container.innerHTML = wax.u.sanitize(x);
+          return a;
+        };
+
+        a.element = function() {
+          return container;
+        };
+
+        a.map = function(x) {
+          if (!arguments.length) return map;
+          map = x;
+          return a;
+        };
+
+        a.add = function() {
+          if (!map) return false;
+          map.parent.appendChild(container);
+          return a;
+        };
+
+        a.remove = function() {
+          if (!map) return false;
+          if (container.parentNode) container.parentNode.removeChild(container);
+          return a;
+        };
+
+        a.appendTo = function(elem) {
+          wax.u.$(elem).appendChild(container);
+          return a;
+        };
+
         return a;
-    };
+      };
+      wax = wax || {};
+      wax.mm = wax.mm || {};
 
-    a.element = function() {
-        return container;
-    };
-
-    a.map = function(x) {
-        if (!arguments.length) return map;
-        map = x;
-        return a;
-    };
-
-    a.add = function() {
-        if (!map) return false;
-        map.parent.appendChild(container);
-        return a;
-    };
-
-    a.remove = function() {
-        if (!map) return false;
-        if (container.parentNode) container.parentNode.removeChild(container);
-        return a;
-    };
-
-    a.appendTo = function(elem) {
-        wax.u.$(elem).appendChild(container);
-        return a;
-    };
-
-    return a;
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
-
-wax.mm.boxselector = function() {
-    var corner,
+      wax.mm.boxselector = function() {
+        var corner,
         nearCorner,
         boxDiv,
         style,
@@ -6479,24 +6473,24 @@ wax.mm.boxselector = function() {
         map,
         callbackManager = new MM.CallbackManager(boxselector, ['change']);
 
-    function getMousePoint(e) {
+        function getMousePoint(e) {
         // start with just the mouse (x, y)
         var point = new MM.Point(e.clientX, e.clientY);
         // correct for scrolled document
         point.x += document.body.scrollLeft +
-            document.documentElement.scrollLeft;
+        document.documentElement.scrollLeft;
         point.y += document.body.scrollTop +
-            document.documentElement.scrollTop;
+        document.documentElement.scrollTop;
 
         // correct for nested offsets in DOM
         for (var node = map.parent; node; node = node.offsetParent) {
-            point.x -= node.offsetLeft;
-            point.y -= node.offsetTop;
+          point.x -= node.offsetLeft;
+          point.y -= node.offsetTop;
         }
         return point;
-    }
+      }
 
-    function mouseDown(e) {
+      function mouseDown(e) {
         if (!e.shiftKey) return;
 
         corner = nearCorner = getMousePoint(e);
@@ -6511,92 +6505,92 @@ wax.mm.boxselector = function() {
 
         map.parent.style.cursor = 'crosshair';
         return MM.cancelEvent(e);
-    }
+      }
 
     // Resize existing box
     function mouseDownResize(e) {
-        var point = getMousePoint(e),
-            TL = {
-                x: parseInt(boxDiv.offsetLeft, 10),
-                y: parseInt(boxDiv.offsetTop, 10)
-            },
-            BR = {
-                x: TL.x + parseInt(boxDiv.offsetWidth, 10),
-                y: TL.y + parseInt(boxDiv.offsetHeight, 10)
-            };
+      var point = getMousePoint(e),
+      TL = {
+        x: parseInt(boxDiv.offsetLeft, 10),
+        y: parseInt(boxDiv.offsetTop, 10)
+      },
+      BR = {
+        x: TL.x + parseInt(boxDiv.offsetWidth, 10),
+        y: TL.y + parseInt(boxDiv.offsetHeight, 10)
+      };
 
         // Determine whether resize is horizontal, vertical or both
         horizontal = point.x - TL.x <= edge || BR.x - point.x <= edge;
         vertical = point.y - TL.y <= edge || BR.y - point.y <= edge;
 
         if (vertical || horizontal) {
-            corner = {
-                x: (point.x - TL.x < BR.x - point.x) ? BR.x : TL.x,
-                y: (point.y - TL.y < BR.y - point.y) ? BR.y : TL.y
-            };
-            nearCorner = {
-                x: (point.x - TL.x < BR.x - point.x) ? TL.x : BR.x,
-                y: (point.y - TL.y < BR.y - point.y) ? TL.y : BR.y
-            };
-            addEvent(document, 'mousemove', mouseMove);
-            addEvent(document, 'mouseup', mouseUp);
-            return MM.cancelEvent(e);
+          corner = {
+            x: (point.x - TL.x < BR.x - point.x) ? BR.x : TL.x,
+            y: (point.y - TL.y < BR.y - point.y) ? BR.y : TL.y
+          };
+          nearCorner = {
+            x: (point.x - TL.x < BR.x - point.x) ? TL.x : BR.x,
+            y: (point.y - TL.y < BR.y - point.y) ? TL.y : BR.y
+          };
+          addEvent(document, 'mousemove', mouseMove);
+          addEvent(document, 'mouseup', mouseUp);
+          return MM.cancelEvent(e);
         }
-    }
+      }
 
-    function mouseMove(e) {
+      function mouseMove(e) {
         var point = getMousePoint(e);
         style.display = 'block';
         if (horizontal) {
-            style.left = (point.x < corner.x ? point.x : corner.x) + 'px';
-            style.width = Math.abs(point.x - corner.x) - 2 * borderWidth + 'px';
+          style.left = (point.x < corner.x ? point.x : corner.x) + 'px';
+          style.width = Math.abs(point.x - corner.x) - 2 * borderWidth + 'px';
         }
         if (vertical) {
-            style.top = (point.y < corner.y ? point.y : corner.y) + 'px';
-            style.height = Math.abs(point.y - corner.y) - 2 * borderWidth + 'px';
+          style.top = (point.y < corner.y ? point.y : corner.y) + 'px';
+          style.height = Math.abs(point.y - corner.y) - 2 * borderWidth + 'px';
         }
         changeCursor(point, map.parent);
         return MM.cancelEvent(e);
-    }
+      }
 
-    function mouseUp(e) {
+      function mouseUp(e) {
         var point = getMousePoint(e),
-            l1 = map.pointLocation( new MM.Point(
-                horizontal ? point.x : nearCorner.x,
-                vertical? point.y : nearCorner.y
-            ));
-            l2 = map.pointLocation(corner);
+        l1 = map.pointLocation( new MM.Point(
+          horizontal ? point.x : nearCorner.x,
+          vertical? point.y : nearCorner.y
+          ));
+        l2 = map.pointLocation(corner);
 
         // Format coordinates like mm.map.getExtent().
         boxselector.extent([
-            new MM.Location(
-                Math.max(l1.lat, l2.lat),
-                Math.min(l1.lon, l2.lon)),
-            new MM.Location(
-                Math.min(l1.lat, l2.lat),
-                Math.max(l1.lon, l2.lon))
-        ]);
+          new MM.Location(
+            Math.max(l1.lat, l2.lat),
+            Math.min(l1.lon, l2.lon)),
+          new MM.Location(
+            Math.min(l1.lat, l2.lat),
+            Math.max(l1.lon, l2.lon))
+          ]);
 
         removeEvent(document, 'mousemove', mouseMove);
         removeEvent(document, 'mouseup', mouseUp);
 
         map.parent.style.cursor = 'auto';
-    }
+      }
 
-    function mouseMoveCursor(e) {
+      function mouseMoveCursor(e) {
         changeCursor(getMousePoint(e), boxDiv);
-    }
+      }
 
     // Set resize cursor if mouse is on edge
     function changeCursor(point, elem) {
-        var TL = {
-                x: parseInt(boxDiv.offsetLeft, 10),
-                y: parseInt(boxDiv.offsetTop, 10)
-            },
-            BR = {
-                x: TL.x + parseInt(boxDiv.offsetWidth, 10),
-                y: TL.y + parseInt(boxDiv.offsetHeight, 10)
-            };
+      var TL = {
+        x: parseInt(boxDiv.offsetLeft, 10),
+        y: parseInt(boxDiv.offsetTop, 10)
+      },
+      BR = {
+        x: TL.x + parseInt(boxDiv.offsetWidth, 10),
+        y: TL.y + parseInt(boxDiv.offsetHeight, 10)
+      };
         // Build cursor style string
         var prefix = '';
         if (point.y - TL.y <= edge) prefix = 'n';
@@ -6605,13 +6599,13 @@ wax.mm.boxselector = function() {
         else if (BR.x - point.x <= edge) prefix += 'e';
         if (prefix !== '') prefix += '-resize';
         elem.style.cursor = prefix;
-    }
+      }
 
-    function drawbox(map, e) {
+      function drawbox(map, e) {
         if (!boxDiv || !box) return;
         var br = map.locationPoint(box[1]),
-            tl = map.locationPoint(box[0]),
-            style = boxDiv.style;
+        tl = map.locationPoint(box[0]),
+        style = boxDiv.style;
 
         style.display = 'block';
         style.height = 'auto';
@@ -6620,39 +6614,39 @@ wax.mm.boxselector = function() {
         style.top = Math.max(0, tl.y) + 'px';
         style.right = Math.max(0, map.dimensions.x - br.x) + 'px';
         style.bottom = Math.max(0, map.dimensions.y - br.y) + 'px';
-    }
+      }
 
-    boxselector.addCallback = function(event, callback) {
+      boxselector.addCallback = function(event, callback) {
         callbackManager.addCallback(event, callback);
         return boxselector;
-    };
+      };
 
-    boxselector.removeCallback = function(event, callback) {
+      boxselector.removeCallback = function(event, callback) {
         callbackManager.removeCallback(event, callback);
         return boxselector;
-    };
+      };
 
-    boxselector.extent = function(x, silent) {
+      boxselector.extent = function(x, silent) {
         if (!x) return box;
 
         box = [
-            new MM.Location(
-                Math.max(x[0].lat, x[1].lat),
-                Math.min(x[0].lon, x[1].lon)),
-            new MM.Location(
-                Math.min(x[0].lat, x[1].lat),
-                Math.max(x[0].lon, x[1].lon))
+        new MM.Location(
+          Math.max(x[0].lat, x[1].lat),
+          Math.min(x[0].lon, x[1].lon)),
+        new MM.Location(
+          Math.min(x[0].lat, x[1].lat),
+          Math.max(x[0].lon, x[1].lon))
         ];
 
         drawbox(map);
 
         if (!silent) callbackManager.dispatchCallback('change', box);
-    };
-    boxDiv = document.createElement('div');
-    boxDiv.className = 'boxselector-box';
-    style = boxDiv.style;
+      };
+      boxDiv = document.createElement('div');
+      boxDiv.className = 'boxselector-box';
+      style = boxDiv.style;
 
-    boxselector.add = function() {
+      boxselector.add = function() {
         boxDiv.id = map.parent.id + '-boxselector-box';
         map.parent.appendChild(boxDiv);
         borderWidth = parseInt(window.getComputedStyle(boxDiv).borderWidth, 10);
@@ -6662,15 +6656,15 @@ wax.mm.boxselector = function() {
         addEvent(map.parent, 'mousemove', mouseMoveCursor);
         map.addCallback('drawn', drawbox);
         return boxselector;
-    };
+      };
 
-    boxselector.map = function(x) {
+      boxselector.map = function(x) {
         if (!arguments.length) return map;
         map = x;
         return boxselector;
-    };
+      };
 
-    boxselector.remove = function() {
+      boxselector.remove = function() {
         map.parent.removeChild(boxDiv);
 
         removeEvent(map.parent, 'mousedown', mouseDown);
@@ -6679,34 +6673,34 @@ wax.mm.boxselector = function() {
 
         map.removeCallback('drawn', drawbox);
         return boxselector;
+      };
+
+      return boxselector;
     };
+    wax = wax || {};
+    wax.mm = wax.mm || {};
+    wax._ = {};
 
-    return boxselector;
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
-wax._ = {};
+    wax.mm.bwdetect = function(map, options) {
+      options = options || {};
+      var lowpng = options.png || '.png128',
+      lowjpg = options.jpg || '.jpg70',
+      bw = false;
 
-wax.mm.bwdetect = function(map, options) {
-    options = options || {};
-    var lowpng = options.png || '.png128',
-        lowjpg = options.jpg || '.jpg70',
-        bw = false;
+      wax._.bw_png = lowpng;
+      wax._.bw_jpg = lowjpg;
 
-    wax._.bw_png = lowpng;
-    wax._.bw_jpg = lowjpg;
-
-    return wax.bwdetect(options, function(x) {
+      return wax.bwdetect(options, function(x) {
         wax._.bw = !x;
         for (var i = 0; i < map.layers.length; i++) {
-            if (map.getLayerAt(i).provider instanceof wax.mm.connector) {
-                map.getLayerAt(i).setProvider(map.getLayerAt(i).provider);
-            }
+          if (map.getLayerAt(i).provider instanceof wax.mm.connector) {
+            map.getLayerAt(i).setProvider(map.getLayerAt(i).provider);
+          }
         }
-    });
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
+      });
+    };
+    wax = wax || {};
+    wax.mm = wax.mm || {};
 
 // Add zoom links, which can be styled as buttons, to a `modestmaps.Map`
 // control. This function can be used chaining-style with other
@@ -6715,199 +6709,199 @@ wax.mm.fullscreen = function() {
     // true: fullscreen
     // false: minimized
     var fullscreened = false,
-        fullscreen = {},
-        a = document.createElement('a'),
-        map,
-        body = document.body,
-        dimensions;
+    fullscreen = {},
+    a = document.createElement('a'),
+    map,
+    body = document.body,
+    dimensions;
 
     a.className = 'map-fullscreen';
     a.href = '#fullscreen';
     // a.innerHTML = 'fullscreen';
 
     function click(e) {
-        if (e) e.stop();
-        if (fullscreened) {
-            fullscreen.original();
-        } else {
-            fullscreen.full();
-        }
+      if (e) e.stop();
+      if (fullscreened) {
+        fullscreen.original();
+      } else {
+        fullscreen.full();
+      }
     }
 
     fullscreen.map = function(x) {
-        if (!arguments.length) return map;
-        map = x;
-        return fullscreen;
+      if (!arguments.length) return map;
+      map = x;
+      return fullscreen;
     };
 
     // Modest Maps demands an absolute height & width, and doesn't auto-correct
     // for changes, so here we save the original size of the element and
     // restore to that size on exit from fullscreen.
     fullscreen.add = function() {
-        bean.add(a, 'click', click);
-        map.parent.appendChild(a);
-        return fullscreen;
+      bean.add(a, 'click', click);
+      map.parent.appendChild(a);
+      return fullscreen;
     };
 
     fullscreen.remove = function() {
-        bean.remove(a, 'click', click);
-        if (a.parentNode) a.parentNode.removeChild(a);
-        return fullscreen;
+      bean.remove(a, 'click', click);
+      if (a.parentNode) a.parentNode.removeChild(a);
+      return fullscreen;
     };
 
     fullscreen.full = function() {
-        if (fullscreened) { return; } else { fullscreened = true; }
-        dimensions = map.dimensions;
-        map.parent.className += ' map-fullscreen-map';
-        body.className += ' map-fullscreen-view';
-        map.dimensions = { x: map.parent.offsetWidth, y: map.parent.offsetHeight };
-        map.draw();
-        return fullscreen;
+      if (fullscreened) { return; } else { fullscreened = true; }
+      dimensions = map.dimensions;
+      map.parent.className += ' map-fullscreen-map';
+      body.className += ' map-fullscreen-view';
+      map.dimensions = { x: map.parent.offsetWidth, y: map.parent.offsetHeight };
+      map.draw();
+      return fullscreen;
     };
 
     fullscreen.original = function() {
-        if (!fullscreened) { return; } else { fullscreened = false; }
-        map.parent.className = map.parent.className.replace(' map-fullscreen-map', '');
-        body.className = body.className.replace(' map-fullscreen-view', '');
-        map.dimensions = dimensions;
-        map.draw();
-        return fullscreen;
+      if (!fullscreened) { return; } else { fullscreened = false; }
+      map.parent.className = map.parent.className.replace(' map-fullscreen-map', '');
+      body.className = body.className.replace(' map-fullscreen-view', '');
+      map.dimensions = dimensions;
+      map.draw();
+      return fullscreen;
     };
 
     fullscreen.fullscreen = function(x) {
-        if (!arguments.length) {
-            return fullscreened;
-        } else {
-            if (x && !fullscreened) {
-                fullscreen.full();
-            } else if (!x && fullscreened) {
-                fullscreen.original();
-            }
-            return fullscreen;
+      if (!arguments.length) {
+        return fullscreened;
+      } else {
+        if (x && !fullscreened) {
+          fullscreen.full();
+        } else if (!x && fullscreened) {
+          fullscreen.original();
         }
+        return fullscreen;
+      }
     };
 
     fullscreen.element = function() {
-        return a;
+      return a;
     };
 
     fullscreen.appendTo = function(elem) {
-        wax.u.$(elem).appendChild(a);
-        return fullscreen;
+      wax.u.$(elem).appendChild(a);
+      return fullscreen;
     };
 
     return fullscreen;
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
+  };
+  wax = wax || {};
+  wax.mm = wax.mm || {};
 
-wax.mm.hash = function() {
+  wax.mm.hash = function() {
     var map;
     var hash = wax.hash({
-        getCenterZoom: function() {
-            var center = map.getCenter(),
-                zoom = map.getZoom(),
-                precision = Math.max(
-                    0,
-                    Math.ceil(Math.log(zoom) / Math.LN2));
+      getCenterZoom: function() {
+        var center = map.getCenter(),
+        zoom = map.getZoom(),
+        precision = Math.max(
+          0,
+          Math.ceil(Math.log(zoom) / Math.LN2));
 
-            return [zoom.toFixed(2),
-                center.lat.toFixed(precision),
-                center.lon.toFixed(precision)
-            ].join('/');
-        },
-        setCenterZoom: function setCenterZoom(args) {
-            map.setCenterZoom(
-                new MM.Location(args[1], args[2]),
-                args[0]);
-        },
-        bindChange: function(fn) {
-            map.addCallback('drawn', fn);
-        },
-        unbindChange: function(fn) {
-            map.removeCallback('drawn', fn);
-        }
+        return [zoom.toFixed(2),
+        center.lat.toFixed(precision),
+        center.lon.toFixed(precision)
+        ].join('/');
+      },
+      setCenterZoom: function setCenterZoom(args) {
+        map.setCenterZoom(
+          new MM.Location(args[1], args[2]),
+          args[0]);
+      },
+      bindChange: function(fn) {
+        map.addCallback('drawn', fn);
+      },
+      unbindChange: function(fn) {
+        map.removeCallback('drawn', fn);
+      }
     });
 
     hash.map = function(x) {
-        if (!arguments.length) return map;
-        map = x;
-        return hash;
+      if (!arguments.length) return map;
+      map = x;
+      return hash;
     };
 
     return hash;
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
+  };
+  wax = wax || {};
+  wax.mm = wax.mm || {};
 
-wax.mm.interaction = function() {
+  wax.mm.interaction = function() {
     var dirty = false,
-        _grid,
-        map,
-        clearingEvents = ['zoomed', 'panned', 'centered',
-            'extentset', 'resized', 'drawn'];
+    _grid,
+    map,
+    clearingEvents = ['zoomed', 'panned', 'centered',
+    'extentset', 'resized', 'drawn'];
 
     function grid() {
-        if (!dirty && _grid !== undefined && _grid.length) {
-            return _grid;
-        } else {
-            var tiles;
-            for (var i = 0; i < map.getLayers().length; i++) {
-                var levels = map.getLayerAt(i).levels;
-                var zoomLayer = levels && levels[Math.round(map.zoom())];
-                if (zoomLayer !== undefined) {
-                    tiles = map.getLayerAt(i).tileElementsInLevel(zoomLayer);
-                    if (tiles.length) break;
-                }
-            }
-            _grid = (function(t) {
-                var o = [];
-                for (var key in t) {
-                    if (t[key].parentNode === zoomLayer) {
-                        var offset = wax.u.offset(t[key]);
-                        o.push([
-                            offset.top,
-                            offset.left,
-                            t[key]
-                        ]);
-                    }
-                }
-                return o;
-            })(tiles);
-            return _grid;
+      if (!dirty && _grid !== undefined && _grid.length) {
+        return _grid;
+      } else {
+        var tiles;
+        for (var i = 0; i < map.getLayers().length; i++) {
+          var levels = map.getLayerAt(i).levels;
+          var zoomLayer = levels && levels[Math.round(map.zoom())];
+          if (zoomLayer !== undefined) {
+            tiles = map.getLayerAt(i).tileElementsInLevel(zoomLayer);
+            if (tiles.length) break;
+          }
         }
+        _grid = (function(t) {
+          var o = [];
+          for (var key in t) {
+            if (t[key].parentNode === zoomLayer) {
+              var offset = wax.u.offset(t[key]);
+              o.push([
+                offset.top,
+                offset.left,
+                t[key]
+                ]);
+            }
+          }
+          return o;
+        })(tiles);
+        return _grid;
+      }
     }
 
     function setdirty() { dirty = true; }
 
     function attach(x) {
-        if (!arguments.length) return map;
-        map = x;
-        for (var i = 0; i < clearingEvents.length; i++) {
-            map.addCallback(clearingEvents[i], setdirty);
-        }
+      if (!arguments.length) return map;
+      map = x;
+      for (var i = 0; i < clearingEvents.length; i++) {
+        map.addCallback(clearingEvents[i], setdirty);
+      }
     }
 
     function detach(x) {
-        for (var i = 0; i < clearingEvents.length; i++) {
-            map.removeCallback(clearingEvents[i], setdirty);
-        }
+      for (var i = 0; i < clearingEvents.length; i++) {
+        map.removeCallback(clearingEvents[i], setdirty);
+      }
     }
 
     return wax.interaction()
-        .attach(attach)
-        .detach(detach)
-        .parent(function() {
-          return map.parent;
-        })
-        .grid(grid);
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
+    .attach(attach)
+    .detach(detach)
+    .parent(function() {
+      return map.parent;
+    })
+    .grid(grid);
+  };
+  wax = wax || {};
+  wax.mm = wax.mm || {};
 
-wax.mm.legend = function() {
+  wax.mm.legend = function() {
     var map,
-        l = {};
+    l = {};
 
     var container = document.createElement('div');
     container.className = 'wax-legends map-legends';
@@ -6917,48 +6911,48 @@ wax.mm.legend = function() {
     element.style.display = 'none';
 
     l.content = function(x) {
-        if (!arguments.length) return element.innerHTML;
+      if (!arguments.length) return element.innerHTML;
 
-        element.innerHTML = wax.u.sanitize(x);
-        element.style.display = 'block';
-        if (element.innerHTML === '') {
-            element.style.display = 'none';
-        }
-        return l;
+      element.innerHTML = wax.u.sanitize(x);
+      element.style.display = 'block';
+      if (element.innerHTML === '') {
+        element.style.display = 'none';
+      }
+      return l;
     };
 
     l.element = function() {
-        return container;
+      return container;
     };
 
     l.map = function(x) {
-        if (!arguments.length) return map;
-        map = x;
-        return l;
+      if (!arguments.length) return map;
+      map = x;
+      return l;
     };
 
     l.add = function() {
-        if (!map) return false;
-        l.appendTo(map.parent);
-        return l;
+      if (!map) return false;
+      l.appendTo(map.parent);
+      return l;
     };
 
     l.remove = function() {
-        if (container.parentNode) {
-            container.parentNode.removeChild(container);
-        }
-        return l;
+      if (container.parentNode) {
+        container.parentNode.removeChild(container);
+      }
+      return l;
     };
 
     l.appendTo = function(elem) {
-        wax.u.$(elem).appendChild(container);
-        return l;
+      wax.u.$(elem).appendChild(container);
+      return l;
     };
 
     return l;
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
+  };
+  wax = wax || {};
+  wax.mm = wax.mm || {};
 
 // This takes an object of options:
 //
@@ -6968,26 +6962,26 @@ wax.mm = wax.mm || {};
 // It also exposes a public API function: `addLocation`, which adds a point
 // to the map as if added by the user.
 wax.mm.pointselector = function() {
-    var map,
-        mouseDownPoint = null,
-        mouseUpPoint = null,
-        callback = null,
-        tolerance = 5,
-        overlayDiv,
-        pointselector = {},
-        callbackManager = new MM.CallbackManager(pointselector, ['change']),
-        locations = [];
+  var map,
+  mouseDownPoint = null,
+  mouseUpPoint = null,
+  callback = null,
+  tolerance = 5,
+  overlayDiv,
+  pointselector = {},
+  callbackManager = new MM.CallbackManager(pointselector, ['change']),
+  locations = [];
 
     // Create a `MM.Point` from a screen event, like a click.
     function makePoint(e) {
-        var coords = wax.u.eventoffset(e);
-        var point = new MM.Point(coords.x, coords.y);
+      var coords = wax.u.eventoffset(e);
+      var point = new MM.Point(coords.x, coords.y);
         // correct for scrolled document
 
         // and for the document
         var body = {
-            x: parseFloat(MM.getStyle(document.documentElement, 'margin-left')),
-            y: parseFloat(MM.getStyle(document.documentElement, 'margin-top'))
+          x: parseFloat(MM.getStyle(document.documentElement, 'margin-left')),
+          y: parseFloat(MM.getStyle(document.documentElement, 'margin-top'))
         };
 
         if (!isNaN(body.x)) point.x -= body.x;
@@ -6996,21 +6990,21 @@ wax.mm.pointselector = function() {
         // TODO: use wax.util.offset
         // correct for nested offsets in DOM
         for (var node = map.parent; node; node = node.offsetParent) {
-            point.x -= node.offsetLeft;
-            point.y -= node.offsetTop;
+          point.x -= node.offsetLeft;
+          point.y -= node.offsetTop;
         }
         return point;
-    }
+      }
 
     // Currently locations in this control contain circular references to elements.
     // These can't be JSON encoded, so here's a utility to clean the data that's
     // spit back.
     function cleanLocations(locations) {
-        var o = [];
-        for (var i = 0; i < locations.length; i++) {
-            o.push(new MM.Location(locations[i].lat, locations[i].lon));
-        }
-        return o;
+      var o = [];
+      for (var i = 0; i < locations.length; i++) {
+        o.push(new MM.Location(locations[i].lat, locations[i].lon));
+      }
+      return o;
     }
 
     // Attach this control to a map by registering callbacks
@@ -7019,120 +7013,120 @@ wax.mm.pointselector = function() {
     // Redraw the points when the map is moved, so that they stay in the
     // correct geographic locations.
     function drawPoints() {
-        var offset = new MM.Point(0, 0);
-        for (var i = 0; i < locations.length; i++) {
-            var point = map.locationPoint(locations[i]);
-            if (!locations[i].pointDiv) {
-                locations[i].pointDiv = document.createElement('div');
-                locations[i].pointDiv.className = 'map-point-div';
-                locations[i].pointDiv.style.position = 'absolute';
-                locations[i].pointDiv.style.display = 'block';
+      var offset = new MM.Point(0, 0);
+      for (var i = 0; i < locations.length; i++) {
+        var point = map.locationPoint(locations[i]);
+        if (!locations[i].pointDiv) {
+          locations[i].pointDiv = document.createElement('div');
+          locations[i].pointDiv.className = 'map-point-div';
+          locations[i].pointDiv.style.position = 'absolute';
+          locations[i].pointDiv.style.display = 'block';
                 // TODO: avoid circular reference
                 locations[i].pointDiv.location = locations[i];
                 // Create this closure once per point
                 bean.add(locations[i].pointDiv, 'mouseup',
-                    (function selectPointWrap(e) {
+                  (function selectPointWrap(e) {
                     var l = locations[i];
                     return function(e) {
-                        MM.removeEvent(map.parent, 'mouseup', mouseUp);
-                        pointselector.deleteLocation(l, e);
+                      MM.removeEvent(map.parent, 'mouseup', mouseUp);
+                      pointselector.deleteLocation(l, e);
                     };
-                })());
+                  })());
                 map.parent.appendChild(locations[i].pointDiv);
+              }
+              locations[i].pointDiv.style.left = point.x + 'px';
+              locations[i].pointDiv.style.top = point.y + 'px';
             }
-            locations[i].pointDiv.style.left = point.x + 'px';
-            locations[i].pointDiv.style.top = point.y + 'px';
-        }
-    }
+          }
 
-    function mouseDown(e) {
-        mouseDownPoint = makePoint(e);
-        bean.add(map.parent, 'mouseup', mouseUp);
-    }
+          function mouseDown(e) {
+            mouseDownPoint = makePoint(e);
+            bean.add(map.parent, 'mouseup', mouseUp);
+          }
 
     // Remove the awful circular reference from locations.
     // TODO: This function should be made unnecessary by not having it.
     function mouseUp(e) {
-        if (!mouseDownPoint) return;
-        mouseUpPoint = makePoint(e);
-        if (MM.Point.distance(mouseDownPoint, mouseUpPoint) < tolerance) {
-            pointselector.addLocation(map.pointLocation(mouseDownPoint));
-            callbackManager.dispatchCallback('change', cleanLocations(locations));
-        }
-        mouseDownPoint = null;
+      if (!mouseDownPoint) return;
+      mouseUpPoint = makePoint(e);
+      if (MM.Point.distance(mouseDownPoint, mouseUpPoint) < tolerance) {
+        pointselector.addLocation(map.pointLocation(mouseDownPoint));
+        callbackManager.dispatchCallback('change', cleanLocations(locations));
+      }
+      mouseDownPoint = null;
     }
 
     // API for programmatically adding points to the map - this
     // calls the callback for ever point added, so it can be symmetrical.
     // Useful for initializing the map when it's a part of a form.
     pointselector.addLocation = function(location) {
-        locations.push(location);
-        drawPoints();
-        callbackManager.dispatchCallback('change', cleanLocations(locations));
-        return pointselector;
+      locations.push(location);
+      drawPoints();
+      callbackManager.dispatchCallback('change', cleanLocations(locations));
+      return pointselector;
     };
 
     // TODO set locations
     pointselector.locations = function() {
-        if (!arguments.length) return locations;
+      if (!arguments.length) return locations;
     };
 
     pointselector.addCallback = function(event, callback) {
-        callbackManager.addCallback(event, callback);
-        return pointselector;
+      callbackManager.addCallback(event, callback);
+      return pointselector;
     };
 
     pointselector.removeCallback = function(event, callback) {
-        callbackManager.removeCallback(event, callback);
-        return pointselector;
+      callbackManager.removeCallback(event, callback);
+      return pointselector;
     };
 
     pointselector.map = function(x) {
-        if (!arguments.length) return map;
-        map = x;
-        return pointselector;
+      if (!arguments.length) return map;
+      map = x;
+      return pointselector;
     };
 
     pointselector.add = function() {
-        bean.add(map.parent, 'mousedown', mouseDown);
-        map.addCallback('drawn', drawPoints);
-        return pointselector;
+      bean.add(map.parent, 'mousedown', mouseDown);
+      map.addCallback('drawn', drawPoints);
+      return pointselector;
     };
 
     pointselector.remove = function() {
-        bean.remove(map.parent, 'mousedown', mouseDown);
-        map.removeCallback('drawn', drawPoints);
-        for (var i = locations.length - 1; i > -1; i--) {
-            pointselector.deleteLocation(locations[i]);
-        }
-        return pointselector;
+      bean.remove(map.parent, 'mousedown', mouseDown);
+      map.removeCallback('drawn', drawPoints);
+      for (var i = locations.length - 1; i > -1; i--) {
+        pointselector.deleteLocation(locations[i]);
+      }
+      return pointselector;
     };
 
     pointselector.deleteLocation = function(location, e) {
-        if (!e || confirm('Delete this point?')) {
-            location.pointDiv.parentNode.removeChild(location.pointDiv);
-            for (var i = 0; i < locations.length; i++) {
-                if (locations[i] === location) {
-                    locations.splice(i, 1);
-                    break;
-                }
-            }
-            callbackManager.dispatchCallback('change', cleanLocations(locations));
+      if (!e || confirm('Delete this point?')) {
+        location.pointDiv.parentNode.removeChild(location.pointDiv);
+        for (var i = 0; i < locations.length; i++) {
+          if (locations[i] === location) {
+            locations.splice(i, 1);
+            break;
+          }
         }
+        callbackManager.dispatchCallback('change', cleanLocations(locations));
+      }
     };
 
     return pointselector;
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
+  };
+  wax = wax || {};
+  wax.mm = wax.mm || {};
 
-wax.mm.zoombox = function() {
+  wax.mm.zoombox = function() {
     // TODO: respond to resize
     var zoombox = {},
-        map,
-        drawing = false,
-        box = document.createElement('div'),
-        mouseDownPoint = null;
+    map,
+    drawing = false,
+    box = document.createElement('div'),
+    mouseDownPoint = null;
 
     function getMousePoint(e) {
         // start with just the mouse (x, y)
@@ -7143,20 +7137,20 @@ wax.mm.zoombox = function() {
 
         // correct for nested offsets in DOM
         for (var node = map.parent; node; node = node.offsetParent) {
-            point.x -= node.offsetLeft;
-            point.y -= node.offsetTop;
+          point.x -= node.offsetLeft;
+          point.y -= node.offsetTop;
         }
         return point;
-    }
+      }
 
-    function mouseUp(e) {
+      function mouseUp(e) {
         if (!drawing) return;
 
         drawing = false;
         var point = getMousePoint(e);
 
         var l1 = map.pointLocation(point),
-            l2 = map.pointLocation(mouseDownPoint);
+        l2 = map.pointLocation(mouseDownPoint);
 
         map.setExtent([l1, l2]);
 
@@ -7165,9 +7159,9 @@ wax.mm.zoombox = function() {
         MM.removeEvent(map.parent, 'mouseup', mouseUp);
 
         map.parent.style.cursor = 'auto';
-    }
+      }
 
-    function mouseDown(e) {
+      function mouseDown(e) {
         if (!(e.shiftKey && !this.drawing)) return;
 
         drawing = true;
@@ -7181,35 +7175,35 @@ wax.mm.zoombox = function() {
 
         map.parent.style.cursor = 'crosshair';
         return MM.cancelEvent(e);
-    }
+      }
 
-    function mouseMove(e) {
+      function mouseMove(e) {
         if (!drawing) return;
 
         var point = getMousePoint(e);
         box.style.display = 'block';
         if (point.x < mouseDownPoint.x) {
-            box.style.left = point.x + 'px';
+          box.style.left = point.x + 'px';
         } else {
-            box.style.left = mouseDownPoint.x + 'px';
+          box.style.left = mouseDownPoint.x + 'px';
         }
         box.style.width = Math.abs(point.x - mouseDownPoint.x) + 'px';
         if (point.y < mouseDownPoint.y) {
-            box.style.top = point.y + 'px';
+          box.style.top = point.y + 'px';
         } else {
-            box.style.top = mouseDownPoint.y + 'px';
+          box.style.top = mouseDownPoint.y + 'px';
         }
         box.style.height = Math.abs(point.y - mouseDownPoint.y) + 'px';
         return MM.cancelEvent(e);
-    }
+      }
 
-    zoombox.map = function(x) {
+      zoombox.map = function(x) {
         if (!arguments.length) return map;
         map = x;
         return zoombox;
-    };
+      };
 
-    zoombox.add = function() {
+      zoombox.add = function() {
         if (!map) return false;
         // Use a flag to determine whether the zoombox is currently being
         // drawn. Necessary only for IE because `mousedown` is triggered
@@ -7219,75 +7213,75 @@ wax.mm.zoombox = function() {
         map.parent.appendChild(box);
         MM.addEvent(map.parent, 'mousedown', mouseDown);
         return this;
-    };
+      };
 
-    zoombox.remove = function() {
+      zoombox.remove = function() {
         if (!map) return false;
         if (box.parentNode) box.parentNode.removeChild(box);
         MM.removeEvent(map.parent, 'mousedown', mouseDown);
         return zoombox;
+      };
+
+      return zoombox;
     };
+    wax = wax || {};
+    wax.mm = wax.mm || {};
 
-    return zoombox;
-};
-wax = wax || {};
-wax.mm = wax.mm || {};
+    wax.mm.zoomer = function() {
+      var zoomer = {},
+      smooth = true,
+      map;
 
-wax.mm.zoomer = function() {
-    var zoomer = {},
-        smooth = true,
-        map;
+      var zoomin = document.createElement('a'),
+      zoomout = document.createElement('a');
 
-    var zoomin = document.createElement('a'),
-        zoomout = document.createElement('a');
-
-    function stopEvents(e) {
+      function stopEvents(e) {
         e.stop();
-    }
+      }
 
-    function zIn(e) {
+      function zIn(e) {
         e.stop();
         if (smooth && map.ease) {
-            map.ease.zoom(map.zoom() + 1).run(50);
+          map.ease.zoom(map.zoom() + 1).run(50);
         } else {
-            map.zoomIn();
+          map.zoomIn();
         }
-    }
+      }
 
-    function zOut(e) {
+      function zOut(e) {
         e.stop();
         if (smooth && map.ease) {
-            map.ease.zoom(map.zoom() - 1).run(50);
+          map.ease.zoom(map.zoom() - 1).run(50);
         } else {
-            map.zoomOut();
+          map.zoomOut();
         }
-    }
+      }
 
-    zoomin.innerHTML = '+';
-    zoomin.href = '#';
-    zoomin.className = 'zoomer zoomin';
-    zoomout.innerHTML = '-';
-    zoomout.href = '#';
-    zoomout.className = 'zoomer zoomout';
+      zoomin.innerHTML = '+';
+      zoomin.href = '#';
+      zoomin.className = 'zoomer zoomin';
+      zoomout.innerHTML = '-';
+      zoomout.href = '#';
+      zoomout.className = 'zoomer zoomout';
 
-    function updateButtons(map, e) {
+      function updateButtons(map, e) {
         if (map.coordinate.zoom === map.coordLimits[0].zoom) {
-            zoomout.className = 'zoomer zoomout zoomdisabled';
+          zoomout.className = 'zoomer zoomout zoomdisabled';
         } else if (map.coordinate.zoom === map.coordLimits[1].zoom) {
-            zoomin.className = 'zoomer zoomin zoomdisabled';
+          zoomin.className = 'zoomer zoomin zoomdisabled';
         } else {
-            zoomin.className = 'zoomer zoomin';
-            zoomout.className = 'zoomer zoomout';
+          zoomin.className = 'zoomer zoomin';
+          zoomout.className = 'zoomer zoomout';
         }
-    }
+      }
 
-    zoomer.map = function(x) {
+      zoomer.map = function(x) {
         if (!arguments.length) return map;
         map = x;
         return zoomer;
-    };
+      };
 
-    zoomer.add = function() {
+      zoomer.add = function() {
         if (!map) return false;
         map.addCallback('drawn', updateButtons);
         zoomer.appendTo(map.parent);
@@ -7296,9 +7290,9 @@ wax.mm.zoomer = function() {
         bean.add(zoomout, 'touchstart click', zOut);
         bean.add(zoomin, 'touchstart click', zIn);
         return zoomer;
-    };
+      };
 
-    zoomer.remove = function() {
+      zoomer.remove = function() {
         if (!map) return false;
         map.removeCallback('drawn', updateButtons);
         if (zoomin.parentNode) zoomin.parentNode.removeChild(zoomin);
@@ -7308,96 +7302,96 @@ wax.mm.zoomer = function() {
         bean.remove(zoomout, 'touchstart click', zOut);
         bean.remove(zoomin, 'touchstart click', zIn);
         return zoomer;
-    };
+      };
 
-    zoomer.appendTo = function(elem) {
+      zoomer.appendTo = function(elem) {
         wax.u.$(elem).appendChild(zoomin);
         wax.u.$(elem).appendChild(zoomout);
         return zoomer;
-    };
+      };
 
-    zoomer.smooth = function(x) {
+      zoomer.smooth = function(x) {
         if (!arguments.length) return smooth;
         smooth = x;
         return zoomer;
-    };
+      };
 
-    return zoomer;
-};
-var wax = wax || {};
-wax.mm = wax.mm || {};
+      return zoomer;
+    };
+    var wax = wax || {};
+    wax.mm = wax.mm || {};
 
 // A layer connector for Modest Maps conformant to TileJSON
 // https://github.com/mapbox/tilejson
 wax.mm._provider = function(options) {
-    this.options = {
-        tiles: options.tiles,
-        scheme: options.scheme || 'xyz',
-        minzoom: options.minzoom || 0,
-        maxzoom: options.maxzoom || 22,
-        bounds: options.bounds || [-180, -90, 180, 90]
-    };
+  this.options = {
+    tiles: options.tiles,
+    scheme: options.scheme || 'xyz',
+    minzoom: options.minzoom || 0,
+    maxzoom: options.maxzoom || 22,
+    bounds: options.bounds || [-180, -90, 180, 90]
+  };
 };
 
 wax.mm._provider.prototype = {
-    outerLimits: function() {
-        return [
-            this.locationCoordinate(
-                new MM.Location(
-                    this.options.bounds[0],
-                    this.options.bounds[1])).zoomTo(this.options.minzoom),
-            this.locationCoordinate(
-                new MM.Location(
-                    this.options.bounds[2],
-                    this.options.bounds[3])).zoomTo(this.options.maxzoom)
-        ];
-    },
-    getTile: function(c) {
-        var coord;
-        if (!(coord = this.sourceCoordinate(c))) return null;
-        if (coord.zoom < this.options.minzoom || coord.zoom > this.options.maxzoom) return null;
+  outerLimits: function() {
+    return [
+    this.locationCoordinate(
+      new MM.Location(
+        this.options.bounds[0],
+        this.options.bounds[1])).zoomTo(this.options.minzoom),
+    this.locationCoordinate(
+      new MM.Location(
+        this.options.bounds[2],
+        this.options.bounds[3])).zoomTo(this.options.maxzoom)
+    ];
+  },
+  getTile: function(c) {
+    var coord;
+    if (!(coord = this.sourceCoordinate(c))) return null;
+    if (coord.zoom < this.options.minzoom || coord.zoom > this.options.maxzoom) return null;
 
-        coord.row = (this.options.scheme === 'tms') ?
-            Math.pow(2, coord.zoom) - coord.row - 1 :
-            coord.row;
+    coord.row = (this.options.scheme === 'tms') ?
+    Math.pow(2, coord.zoom) - coord.row - 1 :
+    coord.row;
 
-        var u = this.options.tiles[parseInt(Math.pow(2, coord.zoom) * coord.row + coord.column, 10) %
-            this.options.tiles.length]
-            .replace('{z}', coord.zoom.toFixed(0))
-            .replace('{x}', coord.column.toFixed(0))
-            .replace('{y}', coord.row.toFixed(0));
+    var u = this.options.tiles[parseInt(Math.pow(2, coord.zoom) * coord.row + coord.column, 10) %
+    this.options.tiles.length]
+    .replace('{z}', coord.zoom.toFixed(0))
+    .replace('{x}', coord.column.toFixed(0))
+    .replace('{y}', coord.row.toFixed(0));
 
-        if (wax._ && wax._.bw) {
-            u = u.replace('.png', wax._.bw_png)
-                .replace('.jpg', wax._.bw_jpg);
-        }
-
-        return u;
+    if (wax._ && wax._.bw) {
+      u = u.replace('.png', wax._.bw_png)
+      .replace('.jpg', wax._.bw_jpg);
     }
+
+    return u;
+  }
 };
 
 if (MM) {
-    MM.extend(wax.mm._provider, MM.MapProvider);
+  MM.extend(wax.mm._provider, MM.MapProvider);
 }
 
 wax.mm.connector = function(options) {
-    var x = new wax.mm._provider(options);
-    return new MM.Layer(x);
+  var x = new wax.mm._provider(options);
+  return new MM.Layer(x);
 };
 ;(function(context, MM) {
-    var easey = function() {
-        var easey = {},
-            running = false,
+  var easey = function() {
+    var easey = {},
+    running = false,
             abort = false, // killswitch for transitions
             abortCallback; // callback called when aborted
 
-        var easings = {
-            easeIn: function(t) { return t * t; },
-            easeOut: function(t) { return Math.sin(t * Math.PI / 2); },
-            easeInOut: function(t) { return (1 - Math.cos(Math.PI * t)) / 2; },
-            linear: function(t) { return t; }
-        };
-        var easing = easings.easeOut;
+            var easings = {
+              easeIn: function(t) { return t * t; },
+              easeOut: function(t) { return Math.sin(t * Math.PI / 2); },
+              easeInOut: function(t) { return (1 - Math.cos(Math.PI * t)) / 2; },
+              linear: function(t) { return t; }
+            };
+            var easing = easings.easeOut;
 
         // to is the singular coordinate that any transition is based off
         // three dimensions:
@@ -7408,92 +7402,92 @@ wax.mm.connector = function(options) {
         var from, to, map;
 
         easey.stop = function(callback) {
-            abort = true;
-            from = undefined;
-            abortCallback = callback;
+          abort = true;
+          from = undefined;
+          abortCallback = callback;
         };
 
         easey.running = function() {
-            return running;
+          return running;
         };
 
         easey.point = function(x) {
-            to = map.pointCoordinate(x);
-            return easey;
+          to = map.pointCoordinate(x);
+          return easey;
         };
 
         easey.zoom = function(x) {
-            if (!to) to = map.coordinate.copy();
-            to = map.enforceZoomLimits(to.zoomTo(x));
-            return easey;
+          if (!to) to = map.coordinate.copy();
+          to = map.enforceZoomLimits(to.zoomTo(x));
+          return easey;
         };
 
         easey.location = function(x) {
-            to = map.locationCoordinate(x);
-            return easey;
+          to = map.locationCoordinate(x);
+          return easey;
         };
 
         easey.from = function(x) {
-            if (!arguments.length) return from ? from.copy() : from;
-            from = x.copy();
-            return easey;
+          if (!arguments.length) return from ? from.copy() : from;
+          from = x.copy();
+          return easey;
         };
 
         easey.to = function(x) {
-            if (!arguments.length) return to.copy();
-            to = map.enforceZoomLimits(x.copy());
-            return easey;
+          if (!arguments.length) return to.copy();
+          to = map.enforceZoomLimits(x.copy());
+          return easey;
         };
 
         easey.path = function(x) {
-            path = paths[x];
-            return easey;
+          path = paths[x];
+          return easey;
         };
 
         easey.easing = function(x) {
-            easing = easings[x];
-            return easey;
+          easing = easings[x];
+          return easey;
         };
 
         easey.map = function(x) {
-            if (!arguments.length) return map;
-            map = x;
-            return easey;
+          if (!arguments.length) return map;
+          map = x;
+          return easey;
         };
 
         function interp(a, b, p) {
-            if (p === 0) return a;
-            if (p === 1) return b;
-            return a + ((b - a) * p);
+          if (p === 0) return a;
+          if (p === 1) return b;
+          return a + ((b - a) * p);
         }
 
         var paths = {},
-            static_coord = new MM.Coordinate(0, 0, 0);
+        static_coord = new MM.Coordinate(0, 0, 0);
 
         // The screen path simply moves between
         // coordinates in a non-geographical way
         paths.screen = function(a, b, t, static_coord) {
-            var zoom_lerp = interp(a.zoom, b.zoom, t);
-            if (static_coord) {
-                static_coord.row = interp(
-                    a.row,
-                    b.row * Math.pow(2, a.zoom - b.zoom),
-                    t) * Math.pow(2, zoom_lerp - a.zoom);
-                static_coord.column = interp(
-                    a.column,
-                    b.column * Math.pow(2, a.zoom - b.zoom),
-                    t) * Math.pow(2, zoom_lerp - a.zoom);
-                static_coord.zoom = zoom_lerp;
-            } else {
-                return new MM.Coordinate(
-                    interp(a.row,
-                        b.row * Math.pow(2, a.zoom - b.zoom),
-                        t) * Math.pow(2, zoom_lerp - a.zoom),
-                    interp(a.column,
-                        b.column * Math.pow(2, a.zoom - b.zoom),
-                        t) * Math.pow(2, zoom_lerp - a.zoom),
-                    zoom_lerp);
-            }
+          var zoom_lerp = interp(a.zoom, b.zoom, t);
+          if (static_coord) {
+            static_coord.row = interp(
+              a.row,
+              b.row * Math.pow(2, a.zoom - b.zoom),
+              t) * Math.pow(2, zoom_lerp - a.zoom);
+            static_coord.column = interp(
+              a.column,
+              b.column * Math.pow(2, a.zoom - b.zoom),
+              t) * Math.pow(2, zoom_lerp - a.zoom);
+            static_coord.zoom = zoom_lerp;
+          } else {
+            return new MM.Coordinate(
+              interp(a.row,
+                b.row * Math.pow(2, a.zoom - b.zoom),
+                t) * Math.pow(2, zoom_lerp - a.zoom),
+              interp(a.column,
+                b.column * Math.pow(2, a.zoom - b.zoom),
+                t) * Math.pow(2, zoom_lerp - a.zoom),
+              zoom_lerp);
+          }
         };
 
         // The screen path means that the b
@@ -7501,94 +7495,94 @@ wax.mm.connector = function(options) {
         // throughout the transition, but the map
         // should move to its zoom level
         paths.about = function(a, b, t, static_coord) {
-            var zoom_lerp = interp(a.zoom, b.zoom, t);
+          var zoom_lerp = interp(a.zoom, b.zoom, t);
 
             // center x, center y
             var cx = map.dimensions.x / 2,
-                cy = map.dimensions.y / 2,
+            cy = map.dimensions.y / 2,
                 // tilesize
                 tx = map.tileSize.x,
                 ty = map.tileSize.y;
 
-            var startx = cx + tx * ((b.column * Math.pow(2, a.zoom - b.zoom)) - a.column);
-            var starty = cy + ty * ((b.row  * Math.pow(2, a.zoom - b.zoom)) - a.row);
+                var startx = cx + tx * ((b.column * Math.pow(2, a.zoom - b.zoom)) - a.column);
+                var starty = cy + ty * ((b.row  * Math.pow(2, a.zoom - b.zoom)) - a.row);
 
-            var endx = cx + tx * ((b.column * Math.pow(2, zoom_lerp - b.zoom)) -
-                (a.column * Math.pow(2, zoom_lerp - a.zoom)));
-            var endy = cy + ty * ((b.row * Math.pow(2, zoom_lerp - b.zoom)) - (a.row *
-                Math.pow(2, zoom_lerp - a.zoom)));
+                var endx = cx + tx * ((b.column * Math.pow(2, zoom_lerp - b.zoom)) -
+                  (a.column * Math.pow(2, zoom_lerp - a.zoom)));
+                var endy = cy + ty * ((b.row * Math.pow(2, zoom_lerp - b.zoom)) - (a.row *
+                  Math.pow(2, zoom_lerp - a.zoom)));
 
-            if (static_coord) {
-                static_coord.column = (a.column * Math.pow(2, zoom_lerp - a.zoom)) - ((startx - endx) / tx);
-                static_coord.row = (a.row * Math.pow(2, zoom_lerp - a.zoom)) - ((starty - endy) / ty);
-                static_coord.zoom = zoom_lerp;
-            } else {
-                return new MM.Coordinate(
+                if (static_coord) {
+                  static_coord.column = (a.column * Math.pow(2, zoom_lerp - a.zoom)) - ((startx - endx) / tx);
+                  static_coord.row = (a.row * Math.pow(2, zoom_lerp - a.zoom)) - ((starty - endy) / ty);
+                  static_coord.zoom = zoom_lerp;
+                } else {
+                  return new MM.Coordinate(
                     (a.column * Math.pow(2, zoom_lerp - a.zoom)) - ((startx - endx) / tx),
                     (a.row * Math.pow(2, zoom_lerp - a.zoom)) - ((starty - endy) / ty),
                     zoom_lerp);
-            }
-        };
-
-        var path = paths.screen;
-
-        easey.t = function(t) {
-            path(from, to, easing(t), static_coord);
-            map.coordinate = static_coord;
-            map.draw();
-            return easey;
-        };
-
-        easey.future = function(parts) {
-            var futures = [];
-            for (var t = 0; t < parts; t++) {
-                futures.push(path(from, to, t / (parts - 1)));
-            }
-            return futures;
-        };
-
-        var start;
-        easey.resetRun = function () {
-            start = (+ new Date());
-            return easey;
-        };
-
-        easey.run = function(time, callback) {
-
-            if (running) return easey.stop(function() {
-                easey.run(time, callback);
-            });
-
-            if (!from) from = map.coordinate.copy();
-            if (!to) to = map.coordinate.copy();
-            time = time || 1000;
-            start = (+new Date());
-            running = true;
-
-            function tick() {
-                var delta = (+new Date()) - start;
-                if (abort) {
-                    abort = running = false;
-                    abortCallback();
-                    return (abortCallback = undefined);
-                } else if (delta > time) {
-                    if (to.zoom != from.zoom) map.dispatchCallback('zoomed', to.zoom - from.zoom);
-                    running = false;
-                    path(from, to, 1, static_coord);
-                    map.coordinate = static_coord;
-                    to = from = undefined;
-                    map.draw();
-                    if (callback) return callback(map);
-                } else {
-                    path(from, to, easing(delta / time), static_coord);
-                    map.coordinate = static_coord;
-                    map.draw();
-                    MM.getFrame(tick);
                 }
-            }
+              };
 
-            MM.getFrame(tick);
-        };
+              var path = paths.screen;
+
+              easey.t = function(t) {
+                path(from, to, easing(t), static_coord);
+                map.coordinate = static_coord;
+                map.draw();
+                return easey;
+              };
+
+              easey.future = function(parts) {
+                var futures = [];
+                for (var t = 0; t < parts; t++) {
+                  futures.push(path(from, to, t / (parts - 1)));
+                }
+                return futures;
+              };
+
+              var start;
+              easey.resetRun = function () {
+                start = (+ new Date());
+                return easey;
+              };
+
+              easey.run = function(time, callback) {
+
+                if (running) return easey.stop(function() {
+                  easey.run(time, callback);
+                });
+
+                  if (!from) from = map.coordinate.copy();
+                  if (!to) to = map.coordinate.copy();
+                  time = time || 1000;
+                  start = (+new Date());
+                  running = true;
+
+                  function tick() {
+                    var delta = (+new Date()) - start;
+                    if (abort) {
+                      abort = running = false;
+                      abortCallback();
+                      return (abortCallback = undefined);
+                    } else if (delta > time) {
+                      if (to.zoom != from.zoom) map.dispatchCallback('zoomed', to.zoom - from.zoom);
+                      running = false;
+                      path(from, to, 1, static_coord);
+                      map.coordinate = static_coord;
+                      to = from = undefined;
+                      map.draw();
+                      if (callback) return callback(map);
+                    } else {
+                      path(from, to, easing(delta / time), static_coord);
+                      map.coordinate = static_coord;
+                      map.draw();
+                      MM.getFrame(tick);
+                    }
+                  }
+
+                  MM.getFrame(tick);
+                };
 
         // Optimally smooth (constant perceived velocity) and
         // efficient (minimal path distance) zooming and panning.
@@ -7600,9 +7594,9 @@ wax.mm.connector = function(options) {
         // Derived equation (9) of optimal path implemented below
         easey.optimal = function(V, rho, callback) {
 
-            if (running) return easey.stop(function() {
-                easey.optimal(V, rho, callback);
-            });
+          if (running) return easey.stop(function() {
+            easey.optimal(V, rho, callback);
+          });
 
             // Section 6 describes user testing of these tunable values
             V = V || 0.9;
@@ -7618,100 +7612,100 @@ wax.mm.connector = function(options) {
 
             // Width is measured in coordinate units at zoom 0
             var TL = map.pointCoordinate(new MM.Point(0, 0)).zoomTo(0),
-                BR = map.pointCoordinate(map.dimensions).zoomTo(0),
-                w0 = Math.max(BR.column - TL.column, BR.row - TL.row),
-                w1 = w0 * Math.pow(2, from.zoom - to.zoom),
-                start = from.zoomTo(0),
-                end = to.zoomTo(0),
-                c0 = {x: start.column, y: start.row},
-                c1 = {x: end.column, y: end.row},
-                u0 = 0,
-                u1 = Math.sqrt(sqr(c1.x - c0.x) + sqr(c1.y - c0.y));
+            BR = map.pointCoordinate(map.dimensions).zoomTo(0),
+            w0 = Math.max(BR.column - TL.column, BR.row - TL.row),
+            w1 = w0 * Math.pow(2, from.zoom - to.zoom),
+            start = from.zoomTo(0),
+            end = to.zoomTo(0),
+            c0 = {x: start.column, y: start.row},
+            c1 = {x: end.column, y: end.row},
+            u0 = 0,
+            u1 = Math.sqrt(sqr(c1.x - c0.x) + sqr(c1.y - c0.y));
 
             function b(i) {
-                var n = sqr(w1) - sqr(w0) + (i ? -1: 1) * Math.pow(rho, 4) * sqr(u1 - u0),
-                    d = 2 * (i ? w1 : w0) * sqr(rho) * (u1 - u0);
-                return n/d;
+              var n = sqr(w1) - sqr(w0) + (i ? -1: 1) * Math.pow(rho, 4) * sqr(u1 - u0),
+              d = 2 * (i ? w1 : w0) * sqr(rho) * (u1 - u0);
+              return n/d;
             }
 
             function r(i) {
-                return Math.log(-b(i) + Math.sqrt(sqr(b(i)) + 1));
+              return Math.log(-b(i) + Math.sqrt(sqr(b(i)) + 1));
             }
 
             var r0 = r(0),
-                r1 = r(1),
-                S = (r1 - r0) / rho;
+            r1 = r(1),
+            S = (r1 - r0) / rho;
 
             // Width
             var w = function(s) {
-                return w0 * cosh(r0) / cosh (rho * s + r0);
+              return w0 * cosh(r0) / cosh (rho * s + r0);
             };
 
             // Zoom
             var u = function(s) {
-                return (w0 / sqr(rho)) * cosh(r0) * tanh(rho * s + r0) - (w0 / sqr(rho)) * sinh(r0) + u0;
+              return (w0 / sqr(rho)) * cosh(r0) * tanh(rho * s + r0) - (w0 / sqr(rho)) * sinh(r0) + u0;
             };
 
             // Special case, when no panning necessary
             if (Math.abs(u1) < 0.000001) {
-                if (Math.abs(w0 - w1) < 0.000001) return;
+              if (Math.abs(w0 - w1) < 0.000001) return;
 
                 // Based on section 4
                 var k = w1 < w0 ? -1 : 1;
                 S = Math.abs(Math.log(w1/w0)) / rho;
                 u = function(s) {
-                    return u0;
+                  return u0;
                 };
                 w = function(s) {
-                    return w0 * Math.exp(k * rho * s);
+                  return w0 * Math.exp(k * rho * s);
                 };
-            }
+              }
 
-            var oldpath = path;
-            path = function (a, b, t, static_coord) {
+              var oldpath = path;
+              path = function (a, b, t, static_coord) {
                 if (t == 1) {
-                    if (static_coord) {
-                        static_coord.row = to.row;
-                        static_coord.column = to.column;
-                        static_coord.zoom = to.zoom;
-                    }
-                    return to;
+                  if (static_coord) {
+                    static_coord.row = to.row;
+                    static_coord.column = to.column;
+                    static_coord.zoom = to.zoom;
+                  }
+                  return to;
                 }
                 var s = t * S,
-                    us = u(s),
-                    z = a.zoom + (Math.log(w0/w(s)) / Math.LN2),
-                    x = interp(c0.x, c1.x, us/u1 || 1),
-                    y = interp(c0.y, c1.y, us/u1 || 1);
+                us = u(s),
+                z = a.zoom + (Math.log(w0/w(s)) / Math.LN2),
+                x = interp(c0.x, c1.x, us/u1 || 1),
+                y = interp(c0.y, c1.y, us/u1 || 1);
 
                 var power = Math.pow(2, z);
                 if (static_coord) {
-                    static_coord.row = y * power;
-                    static_coord.column = x * power;
-                    static_coord.zoom = z;
+                  static_coord.row = y * power;
+                  static_coord.column = x * power;
+                  static_coord.zoom = z;
                 } else {
-                    return new MM.Coordinate(y * power, x * power, z);
+                  return new MM.Coordinate(y * power, x * power, z);
                 }
-            };
+              };
 
-            easey.run(S / V * 1000, function(m) {
+              easey.run(S / V * 1000, function(m) {
                 path = oldpath;
                 if (callback) callback(m);
-            });
-        };
+              });
+            };
 
-        return easey;
-    };
+            return easey;
+          };
 
-    this.easey = easey;
-    if (typeof this.mapbox == 'undefined') this.mapbox = {};
-    this.mapbox.ease = easey;
-})(this, MM);
-;(function(context, MM) {
+          this.easey = easey;
+          if (typeof this.mapbox == 'undefined') this.mapbox = {};
+          this.mapbox.ease = easey;
+        })(this, MM);
+        ;(function(context, MM) {
 
-    var easey_handlers = {};
+          var easey_handlers = {};
 
-    easey_handlers.TouchHandler = function() {
-        var handler = {},
+          easey_handlers.TouchHandler = function() {
+            var handler = {},
             map,
             panner,
             maxTapTime = 250,
@@ -7724,79 +7718,79 @@ wax.mm.connector = function(options) {
             p0 = new MM.Point(0, 0),
             p1 = new MM.Point(0, 0);
 
-        function focusMap(e) {
-            map.parent.focus();
-        }
-
-        function clearLocations() {
-            for (var loc in locations) {
-                if (locations.hasOwnProperty(loc)) {
-                    delete locations[loc];
-                }
+            function focusMap(e) {
+              map.parent.focus();
             }
-        }
 
-        function updateTouches (e) {
-            for (var i = 0; i < e.touches.length; i += 1) {
+            function clearLocations() {
+              for (var loc in locations) {
+                if (locations.hasOwnProperty(loc)) {
+                  delete locations[loc];
+                }
+              }
+            }
+
+            function updateTouches (e) {
+              for (var i = 0; i < e.touches.length; i += 1) {
                 var t = e.touches[i];
                 if (t.identifier in locations) {
-                    var l = locations[t.identifier];
-                    l.x = t.clientX;
-                    l.y = t.clientY;
-                    l.scale = e.scale;
+                  var l = locations[t.identifier];
+                  l.x = t.clientX;
+                  l.y = t.clientY;
+                  l.scale = e.scale;
                 } else {
-                    locations[t.identifier] = {
-                        scale: e.scale,
-                        startPos: { x: t.clientX, y: t.screenY },
-                        startZoom: map.zoom(),
-                        x: t.clientX,
-                        y: t.clientY,
-                        time: new Date().getTime()
-                    };
+                  locations[t.identifier] = {
+                    scale: e.scale,
+                    startPos: { x: t.clientX, y: t.screenY },
+                    startZoom: map.zoom(),
+                    x: t.clientX,
+                    y: t.clientY,
+                    time: new Date().getTime()
+                  };
                 }
+              }
             }
-        }
 
-        function touchStartMachine(e) {
-            if (!panner) panner = panning(map, 0.10);
-            MM.addEvent(e.touches[0].target, 'touchmove',
+            function touchStartMachine(e) {
+              if (!panner) panner = panning(map, 0.10);
+              MM.addEvent(e.touches[0].target, 'touchmove',
                 touchMoveMachine);
-            MM.addEvent(e.touches[0].target, 'touchend',
+              MM.addEvent(e.touches[0].target, 'touchend',
                 touchEndMachine);
-            if (e.touches[1]) {
+              if (e.touches[1]) {
                 MM.addEvent(e.touches[1].target, 'touchmove',
-                    touchMoveMachine);
+                  touchMoveMachine);
                 MM.addEvent(e.touches[1].target, 'touchend',
-                    touchEndMachine);
+                  touchEndMachine);
+              }
+              updateTouches(e);
+              panner.down(e.touches[0]);
+              return MM.cancelEvent(e);
             }
-            updateTouches(e);
-            panner.down(e.touches[0]);
-            return MM.cancelEvent(e);
-        }
 
-        function touchMoveMachine(e) {
-            switch (e.touches.length) {
+            function touchMoveMachine(e) {
+              switch (e.touches.length) {
                 case 1:
-                    panner.move(e.touches[0]);
-                    break;
+                panner.move(e.touches[0]);
+                break;
                 case 2:
-                    onPinching(e);
-                    break;
+                onPinching(e);
+                break;
+              }
+              updateTouches(e);
+              return MM.cancelEvent(e);
             }
-            updateTouches(e);
-            return MM.cancelEvent(e);
-        }
 
         // Handle a tap event - mainly watch for a doubleTap
         function onTap(tap) {
-            if (taps.length &&
-                (tap.time - taps[0].time) < maxDoubleTapDelay) {
-                onDoubleTap(tap);
-                taps = [];
-                return;
-            }
-            taps = [tap];
+          if (taps.length &&
+            (tap.time - taps[0].time) < maxDoubleTapDelay) {
+            onDoubleTap(tap);
+          taps = [];
+          return;
         }
+        taps = [tap];
+      }
 
         // Handle a double tap by zooming in a single zoom level to a
         // round zoom.
@@ -7805,15 +7799,15 @@ wax.mm.connector = function(options) {
             easey().map(map)
             .to(map.pointCoordinate(tap).zoomTo(map.getZoom() + 1))
             .path('about').run(200, function() {
-                map.dispatchCallback('zoomed');
-                clearLocations();
+              map.dispatchCallback('zoomed');
+              clearLocations();
             });
-        }
+          }
 
-        function onPinching(e) {
+          function onPinching(e) {
             // use the first two touches and their previous positions
             var t0 = e.touches[0],
-                t1 = e.touches[1];
+            t1 = e.touches[1];
             p0.x = t0.clientX;
             p0.y = t0.clientY;
             p1.x = t1.clientX;
@@ -7829,51 +7823,51 @@ wax.mm.connector = function(options) {
             var center = MM.Point.interpolate(p0, p1, 0.5);
 
             map.zoomByAbout(
-                Math.log(e.scale) / Math.LN2 - Math.log(l0.scale) / Math.LN2,
-                center);
+              Math.log(e.scale) / Math.LN2 - Math.log(l0.scale) / Math.LN2,
+              center);
 
             // pan from the previous center of these touches
             prevX = l0.x + (l1.x - l0.x) * 0.5;
             prevY = l0.y + (l1.y - l0.y) * 0.5;
             map.panBy(center.x - prevX,
-                      center.y - prevY);
+              center.y - prevY);
             wasPinching = true;
             lastPinchCenter = center;
-        }
+          }
 
         // When a pinch event ends, round the zoom of the map.
         function onPinched(touch) {
             var z = map.getZoom(), // current zoom
-                tz = locations[touch.identifier].startZoom > z ? Math.floor(z) : Math.ceil(z);
+            tz = locations[touch.identifier].startZoom > z ? Math.floor(z) : Math.ceil(z);
             easey().map(map).point(lastPinchCenter).zoom(tz)
-                .path('about').run(300);
+            .path('about').run(300);
             clearLocations();
             wasPinching = false;
-        }
+          }
 
-        function touchEndMachine(e) {
+          function touchEndMachine(e) {
             MM.removeEvent(e.target, 'touchmove',
-                touchMoveMachine);
+              touchMoveMachine);
             MM.removeEvent(e.target, 'touchend',
-                touchEndMachine);
+              touchEndMachine);
             var now = new Date().getTime();
 
             // round zoom if we're done pinching
             if (e.touches.length === 0 && wasPinching) {
-                onPinched(e.changedTouches[0]);
+              onPinched(e.changedTouches[0]);
             }
 
             panner.up();
 
             // Look at each changed touch in turn.
             for (var i = 0; i < e.changedTouches.length; i += 1) {
-                var t = e.changedTouches[i],
-                loc = locations[t.identifier];
+              var t = e.changedTouches[i],
+              loc = locations[t.identifier];
                 // if we didn't see this one (bug?)
                 // or if it was consumed by pinching already
                 // just skip to the next one
                 if (!loc || loc.wasPinch) {
-                    continue;
+                  continue;
                 }
 
                 // we now know we have an event object and a
@@ -7885,16 +7879,16 @@ wax.mm.connector = function(options) {
                 travel = MM.Point.distance(pos, loc.startPos);
                 if (travel > maxTapDistance) {
                     // we will to assume that the drag has been handled separately
-                } else if (time > maxTapTime) {
+                  } else if (time > maxTapTime) {
                     // close in space, but not in time: a hold
                     pos.end = now;
                     pos.duration = time;
-                } else {
+                  } else {
                     // close in both time and space: a tap
                     pos.time = now;
                     onTap(pos);
+                  }
                 }
-            }
 
             // Weird, sometimes an end event doesn't get thrown
             // for a touch that nevertheless has disappeared.
@@ -7902,110 +7896,110 @@ wax.mm.connector = function(options) {
 
             var validTouchIds = {};
             for (var j = 0; j < e.touches.length; j++) {
-                validTouchIds[e.touches[j].identifier] = true;
+              validTouchIds[e.touches[j].identifier] = true;
             }
             for (var id in locations) {
-                if (!(id in validTouchIds)) {
-                    delete validTouchIds[id];
-                }
+              if (!(id in validTouchIds)) {
+                delete validTouchIds[id];
+              }
             }
 
             return MM.cancelEvent(e);
-        }
+          }
 
-        handler.init = function(x) {
+          handler.init = function(x) {
             map = x;
 
             MM.addEvent(map.parent, 'touchstart',
-                touchStartMachine);
-        };
+              touchStartMachine);
+          };
 
-        handler.remove = function() {
+          handler.remove = function() {
             if (!panner) return;
             MM.removeEvent(map.parent, 'touchstart',
-                touchStartMachine);
+              touchStartMachine);
             panner.remove();
+          };
+
+          return handler;
         };
 
-        return handler;
-    };
+        easey_handlers.DoubleClickHandler = function() {
+          var handler = {},
+          map;
 
-    easey_handlers.DoubleClickHandler = function() {
-        var handler = {},
-            map;
-
-        function doubleClick(e) {
+          function doubleClick(e) {
             // Ensure that this handler is attached once.
             // Get the point on the map that was double-clicked
             var point = MM.getMousePoint(e, map);
             z = map.getZoom() + (e.shiftKey ? -1 : 1);
             // use shift-double-click to zoom out
             easey().map(map)
-                .to(map.pointCoordinate(MM.getMousePoint(e, map)).zoomTo(z))
-                .path('about').run(100, function() {
-                map.dispatchCallback('zoomed');
+            .to(map.pointCoordinate(MM.getMousePoint(e, map)).zoomTo(z))
+            .path('about').run(100, function() {
+              map.dispatchCallback('zoomed');
             });
             return MM.cancelEvent(e);
-        }
+          }
 
-        handler.init = function(x) {
+          handler.init = function(x) {
             map = x;
             MM.addEvent(map.parent, 'dblclick', doubleClick);
             return handler;
-        };
+          };
 
-        handler.remove = function() {
+          handler.remove = function() {
             MM.removeEvent(map.parent, 'dblclick', doubleClick);
+          };
+
+          return handler;
         };
 
-        return handler;
-    };
+        easey_handlers.MouseWheelHandler = function() {
+          var handler = {},
+          map,
+          _zoomDiv,
+          ea = easey(),
+          prevTime,
+          precise = false;
 
-    easey_handlers.MouseWheelHandler = function() {
-        var handler = {},
-            map,
-            _zoomDiv,
-            ea = easey(),
-            prevTime,
-            precise = false;
-
-        function mouseWheel(e) {
+          function mouseWheel(e) {
             var delta = 0;
             prevTime = prevTime || new Date().getTime();
 
             try {
-                _zoomDiv.scrollTop = 1000;
-                _zoomDiv.dispatchEvent(e);
-                delta = 1000 - _zoomDiv.scrollTop;
+              _zoomDiv.scrollTop = 1000;
+              _zoomDiv.dispatchEvent(e);
+              delta = 1000 - _zoomDiv.scrollTop;
             } catch (error) {
-                delta = e.wheelDelta || (-e.detail * 5);
+              delta = e.wheelDelta || (-e.detail * 5);
             }
 
             // limit mousewheeling to once every 200ms
             var timeSince = new Date().getTime() - prevTime;
 
             function dispatchZoomed() {
-                map.dispatchCallback('zoomed');
+              map.dispatchCallback('zoomed');
             }
 
             if (!ea.running()) {
               var point = MM.getMousePoint(e, map),
-                  z = map.getZoom();
+              z = map.getZoom();
               ea.map(map)
-                .easing('easeOut')
-                .to(map.pointCoordinate(MM.getMousePoint(e, map)).zoomTo(z + (delta > 0 ? 1 : -1)))
-                .path('about').run(100, dispatchZoomed);
-                prevTime = new Date().getTime();
+              .easing('easeOut')
+              .to(map.pointCoordinate(MM.getMousePoint(e, map)).zoomTo(z + (delta > 0 ? 1 : -1)))
+              .path('about').run(100, dispatchZoomed);
+              prevTime = new Date().getTime();
             } else if (timeSince > 150){
-                ea.zoom(ea.to().zoom + (delta > 0 ? 1 : -1)).from(map.coordinate).resetRun();
-                prevTime = new Date().getTime();
+              ea.zoom(ea.to().zoom + (delta > 0 ? 1 : -1)).from(map.coordinate).resetRun();
+              prevTime = new Date().getTime();
             }
 
             // Cancel the event so that the page doesn't scroll
             return MM.cancelEvent(e);
-        }
+          }
 
-        handler.init = function(x) {
+          handler.init = function(x) {
             map = x;
             _zoomDiv = document.body.appendChild(document.createElement('div'));
             _zoomDiv.style.cssText = 'visibility:hidden;top:0;height:0;width:0;overflow-y:scroll';
@@ -8013,164 +8007,164 @@ wax.mm.connector = function(options) {
             innerDiv.style.height = '2000px';
             MM.addEvent(map.parent, 'mousewheel', mouseWheel);
             return handler;
-        };
+          };
 
-        handler.precise = function(x) {
+          handler.precise = function(x) {
             if (!arguments.length) return precise;
             precise = x;
             return handler;
-        };
+          };
 
-        handler.remove = function() {
+          handler.remove = function() {
             MM.removeEvent(map.parent, 'mousewheel', mouseWheel);
             _zoomDiv.parentNode.removeChild(_zoomDiv);
+          };
+
+          return handler;
         };
 
-        return handler;
-    };
+        easey_handlers.DragHandler = function() {
+          var handler = {},
+          map,
+          panner;
 
-    easey_handlers.DragHandler = function() {
-        var handler = {},
-            map,
-            panner;
-
-        function focusMap(e) {
+          function focusMap(e) {
             map.parent.focus();
-        }
+          }
 
-        function mouseDown(e) {
+          function mouseDown(e) {
             if (e.shiftKey || e.button == 2) return;
             MM.addEvent(document, 'mousemove', mouseMove);
             MM.addEvent(document, 'mouseup', mouseUp);
             panner.down(e);
             map.parent.style.cursor = 'move';
             return MM.cancelEvent(e);
-        }
+          }
 
-        function mouseMove(e) {
+          function mouseMove(e) {
             panner.move(e);
             return MM.cancelEvent(e);
-        }
+          }
 
-        function mouseUp(e) {
+          function mouseUp(e) {
             MM.removeEvent(document, 'mousemove', mouseMove);
             MM.removeEvent(document, 'mouseup', mouseUp);
             panner.up();
             map.parent.style.cursor = '';
             return MM.cancelEvent(e);
-        }
+          }
 
-        handler.init = function(x) {
+          handler.init = function(x) {
             map = x;
             MM.addEvent(map.parent, 'click', focusMap);
             MM.addEvent(map.parent, 'mousedown', mouseDown);
             panner = panning(map);
-        };
+          };
 
-        handler.remove = function() {
+          handler.remove = function() {
             MM.removeEvent(map.parent, 'click', focusMap);
             MM.removeEvent(map.parent, 'mousedown', mouseDown);
             panner.up();
             panner.remove();
+          };
+
+          return handler;
         };
 
-        return handler;
-    };
 
+        function panning(map, drag) {
 
-    function panning(map, drag) {
+          var p = {};
+          drag = drag || 0.15;
 
-        var p = {};
-        drag = drag || 0.15;
+          var speed = { x: 0, y: 0 },
+          dir = { x: 0, y: 0 },
+          removed = false,
+          nowPoint = null,
+          oldPoint = null,
+          moveTime = null,
+          prevMoveTime = null,
+          animatedLastPoint = true,
+          t,
+          prevT = new Date().getTime();
 
-        var speed = { x: 0, y: 0 },
-            dir = { x: 0, y: 0 },
-            removed = false,
-            nowPoint = null,
-            oldPoint = null,
-            moveTime = null,
-            prevMoveTime = null,
-            animatedLastPoint = true,
-            t,
-            prevT = new Date().getTime();
-
-        p.down = function(e) {
+          p.down = function(e) {
             nowPoint = oldPoint = MM.getMousePoint(e, map);
             moveTime = prevMoveTime = +new Date();
-        };
+          };
 
-        p.move = function(e) {
+          p.move = function(e) {
             if (nowPoint) {
-                if (animatedLastPoint) {
-                    oldPoint = nowPoint;
-                    prevMoveTime = moveTime;
-                    animatedLastPoint = false;
-                }
-                nowPoint = MM.getMousePoint(e, map);
-                moveTime = +new Date();
+              if (animatedLastPoint) {
+                oldPoint = nowPoint;
+                prevMoveTime = moveTime;
+                animatedLastPoint = false;
+              }
+              nowPoint = MM.getMousePoint(e, map);
+              moveTime = +new Date();
             }
-        };
+          };
 
-        p.up = function() {
+          p.up = function() {
             if (+new Date() - prevMoveTime < 50) {
-                dt = Math.max(1, moveTime - prevMoveTime);
-                dir.x = nowPoint.x - oldPoint.x;
-                dir.y = nowPoint.y - oldPoint.y;
-                speed.x = dir.x / dt;
-                speed.y = dir.y / dt;
+              dt = Math.max(1, moveTime - prevMoveTime);
+              dir.x = nowPoint.x - oldPoint.x;
+              dir.y = nowPoint.y - oldPoint.y;
+              speed.x = dir.x / dt;
+              speed.y = dir.y / dt;
             } else {
-                speed.x = 0;
-                speed.y = 0;
+              speed.x = 0;
+              speed.y = 0;
             }
             nowPoint = oldPoint = null;
             moveTime = null;
-        };
+          };
 
-        p.remove = function() {
+          p.remove = function() {
             removed = true;
-        };
+          };
 
-        function animate(t) {
+          function animate(t) {
             var dt = Math.max(1, t - prevT);
             if (nowPoint && oldPoint) {
-                if (!animatedLastPoint) {
-                    dir.x = nowPoint.x - oldPoint.x;
-                    dir.y = nowPoint.y - oldPoint.y;
-                    map.panBy(dir.x, dir.y);
-                    animatedLastPoint = true;
-                }
+              if (!animatedLastPoint) {
+                dir.x = nowPoint.x - oldPoint.x;
+                dir.y = nowPoint.y - oldPoint.y;
+                map.panBy(dir.x, dir.y);
+                animatedLastPoint = true;
+              }
             } else {
                 // Rough time based animation accuracy
                 // using a linear approximation approach
                 speed.x *= Math.pow(1 - drag, dt * 60 / 1000);
                 speed.y *= Math.pow(1 - drag, dt * 60 / 1000);
                 if (Math.abs(speed.x) < 0.001) {
-                    speed.x = 0;
+                  speed.x = 0;
                 }
                 if (Math.abs(speed.y) < 0.001) {
-                    speed.y = 0;
+                  speed.y = 0;
                 }
                 if (speed.x || speed.y) {
-                    map.panBy(speed.x * dt, speed.y * dt);
+                  map.panBy(speed.x * dt, speed.y * dt);
                 }
+              }
+              prevT = t;
+              if (!removed) MM.getFrame(animate);
             }
-            prevT = t;
-            if (!removed) MM.getFrame(animate);
-        }
 
-        MM.getFrame(animate);
-        return p;
-    }
+            MM.getFrame(animate);
+            return p;
+          }
 
 
-    this.easey_handlers = easey_handlers;
+          this.easey_handlers = easey_handlers;
 
-})(this, MM);
-if (typeof mapbox == 'undefined') mapbox = {};
-if (typeof mapbox.markers == 'undefined') mapbox.markers = {};
-mapbox.markers.layer = function() {
+        })(this, MM);
+        if (typeof mapbox == 'undefined') mapbox = {};
+        if (typeof mapbox.markers == 'undefined') mapbox.markers = {};
+        mapbox.markers.layer = function() {
 
-    var m = {},
+          var m = {},
         // external list of geojson features
         features = [],
         // internal list of markers
@@ -8185,8 +8179,8 @@ mapbox.markers.layer = function() {
         // a sorter function for sorting GeoJSON objects
         // in the DOM
         sorter = function(a, b) {
-            return b.geometry.coordinates[1] -
-              a.geometry.coordinates[1];
+          return b.geometry.coordinates[1] -
+          a.geometry.coordinates[1];
         },
         // a list of urls from which features can be loaded.
         // these can be templated with {z}, {x}, and {y}
@@ -8196,18 +8190,18 @@ mapbox.markers.layer = function() {
         right = null,
         // a function that filters points
         filter = function() {
-            return true;
+          return true;
         },
         _seq = 0,
         keyfn = function() {
-            return ++_seq;
+          return ++_seq;
         },
         index = {};
 
     // The parent DOM element
     m.parent = document.createElement('div');
     m.parent.style.cssText = 'position: absolute; top: 0px;' +
-        'left:0px; width:100%; height:100%; margin:0; padding:0; z-index:0;pointer-events:none;';
+    'left:0px; width:100%; height:100%; margin:0; padding:0; z-index:0;pointer-events:none;';
     m.name = 'markers';
 
     // reposition a single marker element
@@ -8220,91 +8214,91 @@ mapbox.markers.layer = function() {
         // If this point has wound around the world, adjust its position
         // to the new, onscreen location
         if (pos.x < 0) {
-            pos_loc = new MM.Location(marker.location.lat, marker.location.lon);
-            pos_loc.lon += Math.ceil((left.lon - marker.location.lon) / 360) * 360;
-            new_pos = m.map.locationPoint(pos_loc);
-            if (new_pos.x < m.map.dimensions.x) {
-                pos = new_pos;
-                marker.coord = m.map.locationCoordinate(pos_loc);
-            }
+          pos_loc = new MM.Location(marker.location.lat, marker.location.lon);
+          pos_loc.lon += Math.ceil((left.lon - marker.location.lon) / 360) * 360;
+          new_pos = m.map.locationPoint(pos_loc);
+          if (new_pos.x < m.map.dimensions.x) {
+            pos = new_pos;
+            marker.coord = m.map.locationCoordinate(pos_loc);
+          }
         } else if (pos.x > m.map.dimensions.x) {
-            pos_loc = new MM.Location(marker.location.lat, marker.location.lon);
-            pos_loc.lon -= Math.ceil((marker.location.lon - right.lon) / 360) * 360;
-            new_pos = m.map.locationPoint(pos_loc);
-            if (new_pos.x > 0) {
-                pos = new_pos;
-                marker.coord = m.map.locationCoordinate(pos_loc);
-            }
+          pos_loc = new MM.Location(marker.location.lat, marker.location.lon);
+          pos_loc.lon -= Math.ceil((marker.location.lon - right.lon) / 360) * 360;
+          new_pos = m.map.locationPoint(pos_loc);
+          if (new_pos.x > 0) {
+            pos = new_pos;
+            marker.coord = m.map.locationCoordinate(pos_loc);
+          }
         }
 
         pos.scale = 1;
         pos.width = pos.height = 0;
         MM.moveElement(marker.element, pos);
-    }
+      }
 
     // Adding and removing callbacks is mainly a way to enable mmg_interaction to operate.
     // I think there are better ways to do this, by, for instance, having mmg be able to
     // register 'binders' to markers, but this is backwards-compatible and equivalent
     // externally.
     m.addCallback = function(event, callback) {
-        callbackManager.addCallback(event, callback);
-        return m;
+      callbackManager.addCallback(event, callback);
+      return m;
     };
 
     m.removeCallback = function(event, callback) {
-        callbackManager.removeCallback(event, callback);
-        return m;
+      callbackManager.removeCallback(event, callback);
+      return m;
     };
 
     // Draw this layer - reposition all markers on the div. This requires
     // the markers library to be attached to a map, and will noop otherwise.
     m.draw = function() {
-        if (!m.map) return;
-        left = m.map.pointLocation(new MM.Point(0, 0));
-        right = m.map.pointLocation(new MM.Point(m.map.dimensions.x, 0));
-        callbackManager.dispatchCallback('drawn', m);
-        for (var i = 0; i < markers.length; i++) {
-            reposition(markers[i]);
-        }
+      if (!m.map) return;
+      left = m.map.pointLocation(new MM.Point(0, 0));
+      right = m.map.pointLocation(new MM.Point(m.map.dimensions.x, 0));
+      callbackManager.dispatchCallback('drawn', m);
+      for (var i = 0; i < markers.length; i++) {
+        reposition(markers[i]);
+      }
     };
 
     // Add a fully-formed marker to the layer. This fires a `markeradded` event.
     // This does not require the map element t be attached.
     m.add = function(marker) {
-        if (!marker || !marker.element) return null;
-        m.parent.appendChild(marker.element);
-        markers.push(marker);
-        callbackManager.dispatchCallback('markeradded', marker);
-        return marker;
+      if (!marker || !marker.element) return null;
+      m.parent.appendChild(marker.element);
+      markers.push(marker);
+      callbackManager.dispatchCallback('markeradded', marker);
+      return marker;
     };
 
     // Remove a fully-formed marker - which must be the same exact marker
     // object as in the markers array - from the layer.
     m.remove = function(marker) {
-        if (!marker) return null;
-        m.parent.removeChild(marker.element);
-        for (var i = 0; i < markers.length; i++) {
-            if (markers[i] === marker) {
-                markers.splice(i, 1);
-                return marker;
-            }
+      if (!marker) return null;
+      m.parent.removeChild(marker.element);
+      for (var i = 0; i < markers.length; i++) {
+        if (markers[i] === marker) {
+          markers.splice(i, 1);
+          return marker;
         }
-        return marker;
+      }
+      return marker;
     };
 
     m.markers = function(x) {
-        if (!arguments.length) return markers;
+      if (!arguments.length) return markers;
     };
 
     // Add a GeoJSON feature to the markers layer.
     m.add_feature = function(x) {
-        return m.features(m.features().concat([x]));
+      return m.features(m.features().concat([x]));
     };
 
     m.sort = function(x) {
-        if (!arguments.length) return sorter;
-        sorter = x;
-        return m;
+      if (!arguments.length) return sorter;
+      sorter = x;
+      return m;
     };
 
     // Public data interface
@@ -8319,157 +8313,157 @@ mapbox.markers.layer = function() {
         features.sort(sorter);
 
         for (var j = 0; j < markers.length; j++) {
-            markers[j].touch = false;
+          markers[j].touch = false;
         }
 
         for (var i = 0; i < features.length; i++) {
-            if (filter(features[i])) {
-                var id = keyfn(features[i]);
-                if (index[id]) {
+          if (filter(features[i])) {
+            var id = keyfn(features[i]);
+            if (index[id]) {
                     // marker is already on the map, needs to be moved or rebuilt
                     index[id].location = new MM.Location(
-                        features[i].geometry.coordinates[1],
-                        features[i].geometry.coordinates[0]);
+                      features[i].geometry.coordinates[1],
+                      features[i].geometry.coordinates[0]);
                     index[id].coord = null;
                     reposition(index[id]);
-                } else {
+                  } else {
                     // marker needs to be added to the map
                     index[id] = m.add({
-                        element: factory(features[i]),
-                        location: new MM.Location(
-                            features[i].geometry.coordinates[1],
-                            features[i].geometry.coordinates[0]),
-                        data: features[i]
+                      element: factory(features[i]),
+                      location: new MM.Location(
+                        features[i].geometry.coordinates[1],
+                        features[i].geometry.coordinates[0]),
+                      data: features[i]
                     });
+                  }
+                  if (index[id]) index[id].touch = true;
                 }
-                if (index[id]) index[id].touch = true;
-            }
-        }
+              }
 
-        for (var k = markers.length - 1; k >= 0; k--) {
-            if (markers[k].touch === false) {
-                m.remove(markers[k]);
-            }
-        }
+              for (var k = markers.length - 1; k >= 0; k--) {
+                if (markers[k].touch === false) {
+                  m.remove(markers[k]);
+                }
+              }
 
-        if (m.map && m.map.coordinate) m.map.draw();
+              if (m.map && m.map.coordinate) m.map.draw();
 
-        return m;
-    };
+              return m;
+            };
 
     // Request features from a URL - either a local URL or a JSONP call.
     // Expects GeoJSON-formatted features.
     m.url = function(x, callback) {
-        if (!arguments.length) return urls;
-        if (typeof reqwest === 'undefined') throw 'reqwest is required for url loading';
-        if (typeof x === 'string') x = [x];
+      if (!arguments.length) return urls;
+      if (typeof reqwest === 'undefined') throw 'reqwest is required for url loading';
+      if (typeof x === 'string') x = [x];
 
-        urls = x;
-        function add_features(err, x) {
-            if (err && callback) return callback(err);
-            var features = typeof x !== 'undefined' && x.features ? x.features : null;
-            if (features) m.features(features);
-            if (callback) callback(err, features, m);
-        }
+      urls = x;
+      function add_features(err, x) {
+        if (err && callback) return callback(err);
+        var features = typeof x !== 'undefined' && x.features ? x.features : null;
+        if (features) m.features(features);
+        if (callback) callback(err, features, m);
+      }
 
-        reqwest((urls[0].match(/geojsonp$/)) ? {
-            url: urls[0] + (~urls[0].indexOf('?') ? '&' : '?') + 'callback=?',
-            type: 'jsonp',
-            success: function(resp) { add_features(null, resp); },
-            error: add_features
-        } : {
-            url: urls[0],
-            type: 'json',
-            success: function(resp) { add_features(null, resp); },
-            error: add_features
-        });
-        return m;
+      reqwest((urls[0].match(/geojsonp$/)) ? {
+        url: urls[0] + (~urls[0].indexOf('?') ? '&' : '?') + 'callback=?',
+        type: 'jsonp',
+        success: function(resp) { add_features(null, resp); },
+        error: add_features
+      } : {
+        url: urls[0],
+        type: 'json',
+        success: function(resp) { add_features(null, resp); },
+        error: add_features
+      });
+      return m;
     };
 
     m.id = function(x, callback) {
-        return m.url('http://a.tiles.mapbox.com/v3/' + x + '/markers.geojsonp', callback);
+      return m.url('http://a.tiles.mapbox.com/v3/' + x + '/markers.geojsonp', callback);
     };
 
     m.csv = function(x) {
-        return m.features(mapbox.markers.csv_to_geojson(x));
+      return m.features(mapbox.markers.csv_to_geojson(x));
     };
 
     m.extent = function() {
-        var ext = [{
-            lat: Infinity,
-            lon: Infinity
-        }, {
-            lat: -Infinity,
-            lon: -Infinity
-        }];
-        var ft = m.features();
-        for (var i = 0; i < ft.length; i++) {
-            var coords = ft[i].geometry.coordinates;
-            if (coords[0] < ext[0].lon) ext[0].lon = coords[0];
-            if (coords[1] < ext[0].lat) ext[0].lat = coords[1];
-            if (coords[0] > ext[1].lon) ext[1].lon = coords[0];
-            if (coords[1] > ext[1].lat) ext[1].lat = coords[1];
-        }
-        return ext;
+      var ext = [{
+        lat: Infinity,
+        lon: Infinity
+      }, {
+        lat: -Infinity,
+        lon: -Infinity
+      }];
+      var ft = m.features();
+      for (var i = 0; i < ft.length; i++) {
+        var coords = ft[i].geometry.coordinates;
+        if (coords[0] < ext[0].lon) ext[0].lon = coords[0];
+        if (coords[1] < ext[0].lat) ext[0].lat = coords[1];
+        if (coords[0] > ext[1].lon) ext[1].lon = coords[0];
+        if (coords[1] > ext[1].lat) ext[1].lat = coords[1];
+      }
+      return ext;
     };
 
     m.key = function(x) {
-        if (!arguments.length) return keyfn;
-        if (x === null) {
-            keyfn = function() { return ++_seq; };
-        } else {
-            keyfn = x;
-        }
-        return m;
+      if (!arguments.length) return keyfn;
+      if (x === null) {
+        keyfn = function() { return ++_seq; };
+      } else {
+        keyfn = x;
+      }
+      return m;
     };
 
     // Factory interface
     m.factory = function(x) {
-        if (!arguments.length) return factory;
-        factory = x;
+      if (!arguments.length) return factory;
+      factory = x;
         // re-render all features
         m.features(m.features());
         return m;
-    };
+      };
 
-    m.filter = function(x) {
+      m.filter = function(x) {
         if (!arguments.length) return filter;
         filter = x;
         // Setting a filter re-sets the features into a new array.
         // This does _not_ change the actual output of .features()
         m.features(m.features());
         return m;
-    };
+      };
 
-    m.destroy = function() {
+      m.destroy = function() {
         if (m.parent.parentNode) {
-            m.parent.parentNode.removeChild(m.parent);
+          m.parent.parentNode.removeChild(m.parent);
         }
-    };
+      };
 
     // Get or set this layer's name
     m.named = function(x) {
-        if (!arguments.length) return m.name;
-        m.name = x;
-        return m;
+      if (!arguments.length) return m.name;
+      m.name = x;
+      return m;
     };
 
     m.enabled = true;
 
     m.enable = function() {
-        this.enabled = true;
-        this.parent.style.display = '';
-        return m;
+      this.enabled = true;
+      this.parent.style.display = '';
+      return m;
     };
 
     m.disable = function() {
-        this.enabled = false;
-        this.parent.style.display = 'none';
-        return m;
+      this.enabled = false;
+      this.parent.style.display = 'none';
+      return m;
     };
 
     return m;
-};
+  };
 
 mmg = mapbox.markers.layer; // Backwards compatibility
 mapbox.markers.interaction = function(mmg) {
@@ -8477,179 +8471,179 @@ mapbox.markers.interaction = function(mmg) {
     if (mmg && mmg.interaction) return mmg.interaction;
 
     var mi = {},
-        tooltips = [],
-        exclusive = true,
-        hideOnMove = true,
-        showOnHover = true,
-        close_timer = null,
-        on = true,
-        formatter;
+    tooltips = [],
+    exclusive = true,
+    hideOnMove = true,
+    showOnHover = true,
+    close_timer = null,
+    on = true,
+    formatter;
 
     mi.formatter = function(x) {
-        if (!arguments.length) return formatter;
-        formatter = x;
-        return mi;
+      if (!arguments.length) return formatter;
+      formatter = x;
+      return mi;
     };
     mi.formatter(function(feature) {
-        var o = '',
-            props = feature.properties;
+      var o = '',
+      props = feature.properties;
 
         // Tolerate markers without properties at all.
         if (!props) return null;
 
         if (props.title) {
-            o += '<div class="marker-title">' + props.title + '</div>';
+          o += '<div class="marker-title">' + props.title + '</div>';
         }
         if (props.description) {
-            o += '<div class="marker-description">' + props.description + '</div>';
+          o += '<div class="marker-description">' + props.description + '</div>';
         }
 
         if (typeof html_sanitize !== undefined) {
-            o = html_sanitize(o,
-                function(url) {
-                    if (/^(https?:\/\/|data:image)/.test(url)) return url;
-                },
-                function(x) { return x; });
+          o = html_sanitize(o,
+            function(url) {
+              if (/^(https?:\/\/|data:image)/.test(url)) return url;
+            },
+            function(x) { return x; });
         }
 
         return o;
-    });
+      });
 
     mi.hideOnMove = function(x) {
-        if (!arguments.length) return hideOnMove;
-        hideOnMove = x;
-        return mi;
+      if (!arguments.length) return hideOnMove;
+      hideOnMove = x;
+      return mi;
     };
 
     mi.exclusive = function(x) {
-        if (!arguments.length) return exclusive;
-        exclusive = x;
-        return mi;
+      if (!arguments.length) return exclusive;
+      exclusive = x;
+      return mi;
     };
 
     mi.showOnHover = function(x) {
-        if (!arguments.length) return showOnHover;
-        showOnHover = x;
-        return mi;
+      if (!arguments.length) return showOnHover;
+      showOnHover = x;
+      return mi;
     };
 
     mi.hideTooltips = function() {
-        while (tooltips.length) mmg.remove(tooltips.pop());
-        for (var i = 0; i < markers.length; i++) {
-            delete markers[i].clicked;
-        }
+      while (tooltips.length) mmg.remove(tooltips.pop());
+      for (var i = 0; i < markers.length; i++) {
+        delete markers[i].clicked;
+      }
     };
 
     mi.add = function() {
-        on = true;
-        return mi;
+      on = true;
+      return mi;
     };
 
     mi.remove = function() {
-        on = false;
-        return mi;
+      on = false;
+      return mi;
     };
 
     mi.bindMarker = function(marker) {
-        var delayed_close = function() {
-            if (showOnHover === false) return;
-            if (!marker.clicked) close_timer = window.setTimeout(function() {
-                mi.hideTooltips();
-            }, 200);
-        };
+      var delayed_close = function() {
+        if (showOnHover === false) return;
+        if (!marker.clicked) close_timer = window.setTimeout(function() {
+          mi.hideTooltips();
+        }, 200);
+      };
 
-        var show = function(e) {
-            if (e && e.type == 'mouseover' && showOnHover === false) return;
-            if (!on) return;
-            var content = formatter(marker.data);
+      var show = function(e) {
+        if (e && e.type == 'mouseover' && showOnHover === false) return;
+        if (!on) return;
+        var content = formatter(marker.data);
             // Don't show a popup if the formatter returns an
             // empty string. This does not do any magic around DOM elements.
             if (!content) return;
 
             if (exclusive && tooltips.length > 0) {
-                mi.hideTooltips();
+              mi.hideTooltips();
                 // We've hidden all of the tooltips, so let's not close
                 // the one that we're creating as soon as it is created.
                 if (close_timer) window.clearTimeout(close_timer);
-            }
+              }
 
-            var tooltip = document.createElement('div');
-            tooltip.className = 'marker-tooltip';
-            tooltip.style.width = '100%';
+              var tooltip = document.createElement('div');
+              tooltip.className = 'marker-tooltip';
+              tooltip.style.width = '100%';
 
-            var wrapper = tooltip.appendChild(document.createElement('div'));
-            wrapper.style.cssText = 'position: absolute; pointer-events: none;';
+              var wrapper = tooltip.appendChild(document.createElement('div'));
+              wrapper.style.cssText = 'position: absolute; pointer-events: none;';
 
-            var popup = wrapper.appendChild(document.createElement('div'));
-            popup.className = 'marker-popup';
-            popup.style.cssText = 'pointer-events: auto;';
+              var popup = wrapper.appendChild(document.createElement('div'));
+              popup.className = 'marker-popup';
+              popup.style.cssText = 'pointer-events: auto;';
 
-            if (typeof content == 'string') {
+              if (typeof content == 'string') {
                 popup.innerHTML = content;
-            } else {
+              } else {
                 popup.appendChild(content);
-            }
+              }
 
             // Align the bottom of the tooltip with the top of its marker
             wrapper.style.bottom = marker.element.offsetHeight / 2 + 20 + 'px';
 
             // Block mouse and touch events
             function stopPropagation(e) {
-                e.cancelBubble = true;
-                if (e.stopPropagation) { e.stopPropagation(); }
-                return false;
+              e.cancelBubble = true;
+              if (e.stopPropagation) { e.stopPropagation(); }
+              return false;
             }
             MM.addEvent(popup, 'mousedown', stopPropagation);
             MM.addEvent(popup, 'touchstart', stopPropagation);
 
             if (showOnHover) {
-                tooltip.onmouseover = function() {
-                    if (close_timer) window.clearTimeout(close_timer);
-                };
-                tooltip.onmouseout = delayed_close;
+              tooltip.onmouseover = function() {
+                if (close_timer) window.clearTimeout(close_timer);
+              };
+              tooltip.onmouseout = delayed_close;
             }
 
             var t = {
-                element: tooltip,
-                data: {},
-                interactive: false,
-                location: marker.location.copy()
+              element: tooltip,
+              data: {},
+              interactive: false,
+              location: marker.location.copy()
             };
             tooltips.push(t);
             marker.tooltip = t;
             mmg.add(t);
             mmg.draw();
-        };
+          };
 
-        marker.showTooltip = show;
+          marker.showTooltip = show;
 
-        marker.element.onclick = marker.element.ontouchstart = function() {
+          marker.element.onclick = marker.element.ontouchstart = function() {
             show();
             marker.clicked = true;
+          };
+
+          marker.element.onmouseover = show;
+          marker.element.onmouseout = delayed_close;
         };
 
-        marker.element.onmouseover = show;
-        marker.element.onmouseout = delayed_close;
-    };
-
-    function bindPanned() {
-        mmg.map.addCallback('panned', function() {
+        function bindPanned() {
+          mmg.map.addCallback('panned', function() {
             if (hideOnMove) {
-                while (tooltips.length) {
-                    mmg.remove(tooltips.pop());
-                }
+              while (tooltips.length) {
+                mmg.remove(tooltips.pop());
+              }
             }
-        });
-    }
+          });
+        }
 
-    if (mmg) {
+        if (mmg) {
         // Remove tooltips on panning
         mmg.addCallback('drawn', bindPanned);
 
         // Bind present markers
         var markers = mmg.markers();
         for (var i = 0; i < markers.length; i++) {
-            mi.bindMarker(markers[i]);
+          mi.bindMarker(markers[i]);
         }
 
         // Bind future markers
@@ -8658,30 +8652,30 @@ mapbox.markers.interaction = function(mmg) {
             // of this currently is marker bubbles, which should not recursively
             // give marker bubbles.
             if (marker.interactive !== false) mi.bindMarker(marker);
-        });
+          });
 
         // Save reference to self on the markers instance.
         mmg.interaction = mi;
-    }
+      }
 
-    return mi;
-};
+      return mi;
+    };
 
-mmg_interaction = mapbox.markers.interaction;
-mapbox.markers.csv_to_geojson = function(x) {
+    mmg_interaction = mapbox.markers.interaction;
+    mapbox.markers.csv_to_geojson = function(x) {
     // Extracted from d3
     function csv_parse(text) {
-        var header;
-        return csv_parseRows(text, function(row, i) {
-            if (i) {
-                var o = {}, j = -1, m = header.length;
-                while (++j < m) o[header[j]] = row[j];
-                return o;
-            } else {
-                header = row;
-                return null;
-            }
-        });
+      var header;
+      return csv_parseRows(text, function(row, i) {
+        if (i) {
+          var o = {}, j = -1, m = header.length;
+          while (++j < m) o[header[j]] = row[j];
+          return o;
+        } else {
+          header = row;
+          return null;
+        }
+      });
     }
 
     function csv_parseRows (text, f) {
@@ -8703,101 +8697,101 @@ mapbox.markers.csv_to_geojson = function(x) {
             // special case: quotes
             var j = re.lastIndex;
             if (text.charCodeAt(j) === 34) {
-                var i = j;
-                while (i++ < text.length) {
-                    if (text.charCodeAt(i) === 34) {
-                        if (text.charCodeAt(i + 1) !== 34) break;
-                        i++;
-                    }
+              var i = j;
+              while (i++ < text.length) {
+                if (text.charCodeAt(i) === 34) {
+                  if (text.charCodeAt(i + 1) !== 34) break;
+                  i++;
                 }
-                re.lastIndex = i + 2;
-                var c = text.charCodeAt(i + 1);
-                if (c === 13) {
-                    eol = true;
-                    if (text.charCodeAt(i + 2) === 10) re.lastIndex++;
-                } else if (c === 10) {
-                    eol = true;
-                }
-                return text.substring(j + 1, i).replace(/""/g, "\"");
+              }
+              re.lastIndex = i + 2;
+              var c = text.charCodeAt(i + 1);
+              if (c === 13) {
+                eol = true;
+                if (text.charCodeAt(i + 2) === 10) re.lastIndex++;
+              } else if (c === 10) {
+                eol = true;
+              }
+              return text.substring(j + 1, i).replace(/""/g, "\"");
             }
 
             // common case
             var m = re.exec(text);
             if (m) {
-                eol = m[0].charCodeAt(0) !== 44;
-                return text.substring(j, m.index);
+              eol = m[0].charCodeAt(0) !== 44;
+              return text.substring(j, m.index);
             }
             re.lastIndex = text.length;
             return text.substring(j);
-        }
+          }
 
-        while ((t = token()) !== EOF) {
+          while ((t = token()) !== EOF) {
             var a = [];
             while ((t !== EOL) && (t !== EOF)) {
-                a.push(t);
-                t = token();
+              a.push(t);
+              t = token();
             }
             if (f && !(a = f(a, n++))) continue;
             rows.push(a);
+          }
+
+          return rows;
         }
 
-        return rows;
-    }
+        var features = [];
+        var parsed = csv_parse(x);
+        if (!parsed.length) return features;
 
-    var features = [];
-    var parsed = csv_parse(x);
-    if (!parsed.length) return features;
-
-    var latfield = '',
+        var latfield = '',
         lonfield = '';
 
-    for (var f in parsed[0]) {
-        if (f.match(/^Lat/i)) latfield = f;
-        if (f.match(/^Lon/i)) lonfield = f;
-    }
+        for (var f in parsed[0]) {
+          if (f.match(/^Lat/i)) latfield = f;
+          if (f.match(/^Lon/i)) lonfield = f;
+        }
 
-    if (!latfield || !lonfield) {
-        throw 'CSV: Could not find latitude or longitude field';
-    }
+        if (!latfield || !lonfield) {
+          throw 'CSV: Could not find latitude or longitude field';
+        }
 
-    for (var i = 0; i < parsed.length; i++) {
-        if (parsed[i][lonfield] !== undefined &&
+        for (var i = 0; i < parsed.length; i++) {
+          if (parsed[i][lonfield] !== undefined &&
             parsed[i][lonfield] !== undefined) {
             features.push({
-                type: 'Feature',
-                properties: parsed[i],
-                geometry: {
-                    type: 'Point',
-                    coordinates: [
-                        parseFloat(parsed[i][lonfield]),
-                        parseFloat(parsed[i][latfield])]
-                }
+              type: 'Feature',
+              properties: parsed[i],
+              geometry: {
+                type: 'Point',
+                coordinates: [
+                parseFloat(parsed[i][lonfield]),
+                parseFloat(parsed[i][latfield])]
+              }
             });
         }
-    }
-    return features;
-};
-mapbox.markers.simplestyle_factory = function(feature) {
-
-    var sizes = {
-      small: [20, 50],
-      medium: [30, 70],
-      large: [35, 90]
+      }
+      return features;
     };
+    mapbox.markers.simplestyle_factory = function(feature) {
 
-    var fp = feature.properties || {};
+      var sizes = {
+        small: [20, 50],
+        medium: [30, 70],
+        large: [35, 90]
+      };
 
-    var size = fp['marker-size'] || 'medium';
-    var symbol = (fp['marker-symbol']) ? '-' + fp['marker-symbol'] : '';
-    var color = fp['marker-color'] || '7e7e7e';
-    color = color.replace('#', '');
+      var fp = feature.properties || {};
 
-    var d = document.createElement('img');
-    d.width = sizes[size][0];
-    d.height = sizes[size][1];
-    d.className = 'simplestyle-marker';
-    d.alt = fp.title || '';
-    d.src = (mapbox.markers.marker_baseurl || 'http://a.tiles.mapbox.com/v3/marker/') +
+      var size = fp['marker-size'] || 'medium';
+      var symbol = (fp['marker-symbol']) ? '-' + fp['marker-symbol'] : '';
+      var color = fp['marker-color'] || '7e7e7e';
+      color = color.replace('#', '');
+
+      var d = document.createElement('img');
+      d.width = sizes[size][0];
+      d.height = sizes[size][1];
+      d.className = 'simplestyle-marker';
+      d.alt = fp.title || '';
+      d.src = (mapbox.markers.marker_baseurl || 'http://a.tiles.mapbox.com/v3/marker/') +
       'pin-' +
       // Internet Explorer does not support the `size[0]` syntax.
       size.charAt(0) + symbol + '+' + color +
@@ -8805,30 +8799,30 @@ mapbox.markers.simplestyle_factory = function(feature) {
       '.png';
       // Support retina markers for 2x devices
 
-    var ds = d.style;
-    ds.position = 'absolute';
-    ds.clip = 'rect(auto auto ' + (sizes[size][1] * 0.75) + 'px auto)';
-    ds.marginTop = -((sizes[size][1]) / 2) + 'px';
-    ds.marginLeft = -(sizes[size][0] / 2) + 'px';
-    ds.cursor = 'pointer';
-    ds.pointerEvents = 'all';
+      var ds = d.style;
+      ds.position = 'absolute';
+      ds.clip = 'rect(auto auto ' + (sizes[size][1] * 0.75) + 'px auto)';
+      ds.marginTop = -((sizes[size][1]) / 2) + 'px';
+      ds.marginLeft = -(sizes[size][0] / 2) + 'px';
+      ds.cursor = 'pointer';
+      ds.pointerEvents = 'all';
 
-    return d;
-};
-if (typeof mapbox === 'undefined') mapbox = {};
+      return d;
+    };
+    if (typeof mapbox === 'undefined') mapbox = {};
 
-mapbox.MAPBOX_URL = 'http://a.tiles.mapbox.com/v3/';
+    mapbox.MAPBOX_URL = 'http://a.tiles.mapbox.com/v3/';
 
 // a `mapbox.map` is a modestmaps object with the
 // easey handlers as defaults
 mapbox.map = function(el, layer, dimensions, eventhandlers) {
-    var m = new MM.Map(el, layer, dimensions,
-            eventhandlers || [
-            easey_handlers.TouchHandler(),
-            easey_handlers.DragHandler(),
-            easey_handlers.DoubleClickHandler(),
-            easey_handlers.MouseWheelHandler()
-        ]);
+  var m = new MM.Map(el, layer, dimensions,
+    eventhandlers || [
+    easey_handlers.TouchHandler(),
+    easey_handlers.DragHandler(),
+    easey_handlers.DoubleClickHandler(),
+    easey_handlers.MouseWheelHandler()
+    ]);
 
     // Set maxzoom to 17, highest zoom level supported by MapBox streets
     m.setZoomRange(0, 17);
@@ -8840,150 +8834,150 @@ mapbox.map = function(el, layer, dimensions, eventhandlers) {
 
     // Autoconfigure map with sensible defaults
     m.auto = function() {
-        this.ui.zoomer.add();
-        this.ui.zoombox.add();
-        this.ui.legend.add();
-        this.ui.attribution.add();
-        this.ui.refresh();
-        this.interaction.auto();
+      this.ui.zoomer.add();
+      this.ui.zoombox.add();
+      this.ui.legend.add();
+      this.ui.attribution.add();
+      this.ui.refresh();
+      this.interaction.auto();
 
-        for (var i = 0; i < this.layers.length; i++) {
-            if (this.layers[i].tilejson) {
-                var tj = this.layers[i].tilejson(),
-                    center = tj.center || new MM.Location(0, 0),
-                    zoom = tj.zoom || 0;
-                this.setCenterZoom(center, zoom);
-                break;
-            }
+      for (var i = 0; i < this.layers.length; i++) {
+        if (this.layers[i].tilejson) {
+          var tj = this.layers[i].tilejson(),
+          center = tj.center || new MM.Location(0, 0),
+          zoom = tj.zoom || 0;
+          this.setCenterZoom(center, zoom);
+          break;
         }
-        return this;
+      }
+      return this;
     };
 
     m.refresh = function() {
-        this.ui.refresh();
-        this.interaction.refresh();
-        return this;
+      this.ui.refresh();
+      this.interaction.refresh();
+      return this;
     };
 
     var smooth_handlers = [
-        easey_handlers.TouchHandler,
-        easey_handlers.DragHandler,
-        easey_handlers.DoubleClickHandler,
-        easey_handlers.MouseWheelHandler
+    easey_handlers.TouchHandler,
+    easey_handlers.DragHandler,
+    easey_handlers.DoubleClickHandler,
+    easey_handlers.MouseWheelHandler
     ];
 
     var default_handlers = [
-        MM.TouchHandler,
-        MM.DragHandler,
-        MM.DoubleClickHandler,
-        MM.MouseWheelHandler
+    MM.TouchHandler,
+    MM.DragHandler,
+    MM.DoubleClickHandler,
+    MM.MouseWheelHandler
     ];
 
     MM.Map.prototype.smooth = function(_) {
-        while (this.eventHandlers.length) {
-            this.eventHandlers.pop().remove();
-        }
+      while (this.eventHandlers.length) {
+        this.eventHandlers.pop().remove();
+      }
 
-        var handlers = _ ? smooth_handlers : default_handlers;
-        for (var j = 0; j < handlers.length; j++) {
-            var h = handlers[j]();
-            this.eventHandlers.push(h);
-            h.init(this);
-        }
-        return m;
+      var handlers = _ ? smooth_handlers : default_handlers;
+      for (var j = 0; j < handlers.length; j++) {
+        var h = handlers[j]();
+        this.eventHandlers.push(h);
+        h.init(this);
+      }
+      return m;
     };
 
     m.setPanLimits = function(locations) {
-        if (!(locations instanceof MM.Extent)) {
-            locations = new MM.Extent(
-                new MM.Location(
-                    locations[0].lat,
-                    locations[0].lon),
-                new MM.Location(
-                    locations[1].lat,
-                    locations[1].lon));
-        }
-        locations = locations.toArray();
-        this.coordLimits = [
-            this.locationCoordinate(locations[0]).zoomTo(this.coordLimits[0].zoom),
-            this.locationCoordinate(locations[1]).zoomTo(this.coordLimits[1].zoom)
-        ];
-        return m;
+      if (!(locations instanceof MM.Extent)) {
+        locations = new MM.Extent(
+          new MM.Location(
+            locations[0].lat,
+            locations[0].lon),
+          new MM.Location(
+            locations[1].lat,
+            locations[1].lon));
+      }
+      locations = locations.toArray();
+      this.coordLimits = [
+      this.locationCoordinate(locations[0]).zoomTo(this.coordLimits[0].zoom),
+      this.locationCoordinate(locations[1]).zoomTo(this.coordLimits[1].zoom)
+      ];
+      return m;
     };
 
     m.center = function(location, animate) {
-        if (location && animate) {
-            this.ease.location(location).zoom(this.zoom())
-                .optimal(null, null, animate.callback);
-        } else {
-            return MM.Map.prototype.center.call(this, location);
-        }
+      if (location && animate) {
+        this.ease.location(location).zoom(this.zoom())
+        .optimal(null, null, animate.callback);
+      } else {
+        return MM.Map.prototype.center.call(this, location);
+      }
     };
 
     m.zoom = function(zoom, animate) {
-        if (zoom !== undefined && animate) {
-            this.ease.to(this.coordinate).zoom(zoom).run(600);
-        } else {
-            return MM.Map.prototype.zoom.call(this, zoom);
-        }
+      if (zoom !== undefined && animate) {
+        this.ease.to(this.coordinate).zoom(zoom).run(600);
+      } else {
+        return MM.Map.prototype.zoom.call(this, zoom);
+      }
     };
 
     m.centerzoom = function(location, zoom, animate) {
-        if (location && zoom !== undefined && animate) {
-            this.ease.location(location).zoom(zoom).optimal(null, null, animate.callback);
-        } else if (location && zoom !== undefined) {
-            return this.setCenterZoom(location, zoom);
-        }
+      if (location && zoom !== undefined && animate) {
+        this.ease.location(location).zoom(zoom).optimal(null, null, animate.callback);
+      } else if (location && zoom !== undefined) {
+        return this.setCenterZoom(location, zoom);
+      }
     };
 
     // Insert a tile layer below marker layers
     m.addTileLayer = function(layer) {
-        for (var i = m.layers.length; i > 0; i--) {
-            if (!m.layers[i - 1].features) {
-                return this.insertLayerAt(i, layer);
-            }
+      for (var i = m.layers.length; i > 0; i--) {
+        if (!m.layers[i - 1].features) {
+          return this.insertLayerAt(i, layer);
         }
-        return this.insertLayerAt(0, layer);
+      }
+      return this.insertLayerAt(0, layer);
     };
 
     // We need to redraw after removing due to compositing
     m.removeLayerAt = function(index) {
-        MM.Map.prototype.removeLayerAt.call(this, index);
-        MM.getFrame(this.getRedraw());
-        return this;
+      MM.Map.prototype.removeLayerAt.call(this, index);
+      MM.getFrame(this.getRedraw());
+      return this;
     };
 
     // We need to redraw after removing due to compositing
     m.swapLayersAt = function(a, b) {
-        MM.Map.prototype.swapLayersAt.call(this, a, b);
-        MM.getFrame(this.getRedraw());
-        return this;
+      MM.Map.prototype.swapLayersAt.call(this, a, b);
+      MM.getFrame(this.getRedraw());
+      return this;
     };
 
     return m;
-};
+  };
 
-this.mapbox = mapbox;
-if (typeof mapbox === 'undefined') mapbox = {};
+  this.mapbox = mapbox;
+  if (typeof mapbox === 'undefined') mapbox = {};
 
 // Simplest way to create a map. Just provide an element id and
 // a tilejson url (or an array of many) and an optional callback
 // that takes one argument, the map.
 mapbox.auto = function(elem, url, callback) {
-    mapbox.load(url, function(tj) {
+  mapbox.load(url, function(tj) {
 
-        var opts = tj instanceof Array ? tj : [tj];
+    var opts = tj instanceof Array ? tj : [tj];
 
-        var tileLayers = [],
-            markerLayers = [];
-        for (var i = 0; i < opts.length; i++) {
-            if (opts[i].layer) tileLayers.push(opts[i].layer);
-            if (opts[i].markers) markerLayers.push(opts[i].markers);
-        }
+    var tileLayers = [],
+    markerLayers = [];
+    for (var i = 0; i < opts.length; i++) {
+      if (opts[i].layer) tileLayers.push(opts[i].layer);
+      if (opts[i].markers) markerLayers.push(opts[i].markers);
+    }
 
-        var map = mapbox.map(elem, tileLayers.concat(markerLayers)).auto();
-        if (callback) callback(map, tj);
-    });
+    var map = mapbox.map(elem, tileLayers.concat(markerLayers)).auto();
+    if (callback) callback(map, tj);
+  });
 };
 
 
@@ -8994,12 +8988,12 @@ mapbox.load = function(url, callback) {
 
     // Support multiple urls
     if (url instanceof Array) {
-        return mapbox.util.asyncMap(url, mapbox.load, callback);
+      return mapbox.util.asyncMap(url, mapbox.load, callback);
     }
 
     // Support bare IDs as well as fully-formed URLs
     if (url.indexOf('http') !== 0) {
-        url = mapbox.MAPBOX_URL + url + '.jsonp';
+      url = mapbox.MAPBOX_URL + url + '.jsonp';
     }
 
     wax.tilejson(url, function(tj) {
@@ -9008,8 +9002,8 @@ mapbox.load = function(url, callback) {
 
         // Instantiate center as a Modest Maps-compatible object
         tj.center = {
-            lat: tj.center[1],
-            lon: tj.center[0]
+          lat: tj.center[1],
+          lon: tj.center[0]
         };
 
         tj.thumbnail = mapbox.MAPBOX_URL + tj.id + '/thumb.png';
@@ -9019,21 +9013,21 @@ mapbox.load = function(url, callback) {
 
         // Instantiate markers layer
         if (tj.data) {
-            tj.markers = mapbox.markers.layer();
-            tj.markers.url(tj.data, function() {
-                mapbox.markers.interaction(tj.markers);
-                callback(tj);
-            });
-        } else {
+          tj.markers = mapbox.markers.layer();
+          tj.markers.url(tj.data, function() {
+            mapbox.markers.interaction(tj.markers);
             callback(tj);
+          });
+        } else {
+          callback(tj);
         }
-    });
-};
-if (typeof mapbox === 'undefined') mapbox = {};
+      });
+  };
+  if (typeof mapbox === 'undefined') mapbox = {};
 
-mapbox.layer = function() {
+  mapbox.layer = function() {
     if (!(this instanceof mapbox.layer)) {
-        return new mapbox.layer();
+      return new mapbox.layer();
     }
     // instance variables
     this._tilejson = {};
@@ -9049,42 +9043,42 @@ mapbox.layer = function() {
     this.requestManager.addCallback('requestcomplete', this.getTileComplete());
     this.requestManager.addCallback('requesterror', this.getTileError());
     this.setProvider(new wax.mm._provider({
-        tiles: ['data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7']
+      tiles: ['data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7']
     }));
-};
+  };
 
-mapbox.layer.prototype.refresh = function(callback) {
+  mapbox.layer.prototype.refresh = function(callback) {
     var that = this;
     // When the async request for a TileJSON blob comes back,
     // this resets its own tilejson and calls setProvider on itself.
     wax.tilejson(this._url, function(o) {
-        that.tilejson(o);
-        if (callback) callback(that);
+      that.tilejson(o);
+      if (callback) callback(that);
     });
     return this;
-};
+  };
 
-mapbox.layer.prototype.url = function(x, callback) {
+  mapbox.layer.prototype.url = function(x, callback) {
     if (!arguments.length) return this._url;
     this._mapboxhosting = x.indexOf(mapbox.MAPBOX_URL) == 0;
     this._url = x;
     return this.refresh(callback);
-};
+  };
 
-mapbox.layer.prototype.id = function(x, callback) {
+  mapbox.layer.prototype.id = function(x, callback) {
     if (!arguments.length) return this._id;
     this.named(x);
     this._id = x;
     return this.url(mapbox.MAPBOX_URL + x + '.jsonp', callback);
-};
+  };
 
-mapbox.layer.prototype.named = function(x) {
+  mapbox.layer.prototype.named = function(x) {
     if (!arguments.length) return this.name;
     this.name = x;
     return this;
-};
+  };
 
-mapbox.layer.prototype.tilejson = function(x) {
+  mapbox.layer.prototype.tilejson = function(x) {
     if (!arguments.length) return this._tilejson;
 
     if (!this._composite || !this._mapboxhosting) this.setProvider(new wax.mm._provider(x));
@@ -9095,24 +9089,24 @@ mapbox.layer.prototype.tilejson = function(x) {
     this._id = this._id || x.id;
 
     if (x.bounds) {
-        var proj = new MM.MercatorProjection(0,
-            MM.deriveTransformation(
-                -Math.PI,  Math.PI, 0, 0,
-                Math.PI,  Math.PI, 1, 0,
-                -Math.PI, -Math.PI, 0, 1));
+      var proj = new MM.MercatorProjection(0,
+        MM.deriveTransformation(
+          -Math.PI,  Math.PI, 0, 0,
+          Math.PI,  Math.PI, 1, 0,
+          -Math.PI, -Math.PI, 0, 1));
 
-        this.provider.tileLimits = [
-            proj.locationCoordinate(new MM.Location(x.bounds[3], x.bounds[0]))
-                .zoomTo(x.minzoom ? x.minzoom : 0),
-            proj.locationCoordinate(new MM.Location(x.bounds[1], x.bounds[2]))
-                .zoomTo(x.maxzoom ? x.maxzoom : 18)
-        ];
+      this.provider.tileLimits = [
+      proj.locationCoordinate(new MM.Location(x.bounds[3], x.bounds[0]))
+      .zoomTo(x.minzoom ? x.minzoom : 0),
+      proj.locationCoordinate(new MM.Location(x.bounds[1], x.bounds[2]))
+      .zoomTo(x.maxzoom ? x.maxzoom : 18)
+      ];
     }
 
     return this;
-};
+  };
 
-mapbox.layer.prototype.draw = function() {
+  mapbox.layer.prototype.draw = function() {
     if (!this.enabled || !this.map) return;
 
     if (this._composite && this._mapboxhosting) {
@@ -9120,173 +9114,173 @@ mapbox.layer.prototype.draw = function() {
         // Get index of current layer
         var i = 0;
         for (i; i < this.map.layers.length; i++) {
-            if (this.map.layers[i] == this) break;
+          if (this.map.layers[i] == this) break;
         }
 
         // If layer is composited by layer below it, don't draw
         for (var j = i - 1; j >= 0; j--) {
-            if (this.map.getLayerAt(j).enabled) {
-                if (this.map.getLayerAt(j)._composite) {
-                    this.parent.style.display = 'none';
-                    this.compositeLayer = false;
-                    return this;
-                }
-                else break;
+          if (this.map.getLayerAt(j).enabled) {
+            if (this.map.getLayerAt(j)._composite) {
+              this.parent.style.display = 'none';
+              this.compositeLayer = false;
+              return this;
             }
+            else break;
+          }
         }
 
         // Get map IDs for all consecutive composited layers
         var ids = [];
         for (var k = i; k < this.map.layers.length; k++) {
-            var l = this.map.getLayerAt(k);
-            if (l.enabled) {
-                if (l._composite && l._mapboxhosting) ids.push(l.id());
-                else break;
-            }
+          var l = this.map.getLayerAt(k);
+          if (l.enabled) {
+            if (l._composite && l._mapboxhosting) ids.push(l.id());
+            else break;
+          }
         }
         ids = ids.join(',');
 
         if (this.compositeLayer !== ids) {
-            this.compositeLayer = ids;
-            var that = this;
-            wax.tilejson(mapbox.MAPBOX_URL + ids + '.jsonp', function(tiledata) {
-                that.setProvider(new wax.mm._provider(tiledata));
+          this.compositeLayer = ids;
+          var that = this;
+          wax.tilejson(mapbox.MAPBOX_URL + ids + '.jsonp', function(tiledata) {
+            that.setProvider(new wax.mm._provider(tiledata));
                 // setProvider calls .draw()
-            });
-            this.parent.style.display = '';
-            return this;
+              });
+          this.parent.style.display = '';
+          return this;
         }
 
-    } else {
+      } else {
         this.parent.style.display = '';
         // Set back to regular provider
         if (this.compositeLayer) {
-            this.compositeLayer = false;
-            this.setProvider(new wax.mm._provider(this.tilejson()));
+          this.compositeLayer = false;
+          this.setProvider(new wax.mm._provider(this.tilejson()));
             // .draw() called by .tilejson()
+          }
         }
-    }
 
-    return MM.Layer.prototype.draw.call(this);
-};
+        return MM.Layer.prototype.draw.call(this);
+      };
 
-mapbox.layer.prototype.composite = function(x) {
-    if (!arguments.length) return this._composite;
-    if (x) this._composite = true;
-    else this._composite = false;
-    return this;
-};
+      mapbox.layer.prototype.composite = function(x) {
+        if (!arguments.length) return this._composite;
+        if (x) this._composite = true;
+        else this._composite = false;
+        return this;
+      };
 
 // we need to redraw map due to compositing
 mapbox.layer.prototype.enable = function(x) {
-    MM.Layer.prototype.enable.call(this, x);
-    if (this.map) this.map.draw();
-    return this;
+  MM.Layer.prototype.enable.call(this, x);
+  if (this.map) this.map.draw();
+  return this;
 };
 
 // we need to redraw map due to compositing
 mapbox.layer.prototype.disable = function(x) {
-    MM.Layer.prototype.disable.call(this, x);
-    if (this.map) this.map.draw();
-    return this;
+  MM.Layer.prototype.disable.call(this, x);
+  if (this.map) this.map.draw();
+  return this;
 };
 
 MM.extend(mapbox.layer, MM.Layer);
 if (typeof mapbox === 'undefined') mapbox = {};
 
 mapbox.ui = function(map) {
-    var ui = {
-        zoomer: wax.mm.zoomer().map(map).smooth(true),
-        pointselector: wax.mm.pointselector().map(map),
-        hash: wax.mm.hash().map(map),
-        zoombox: wax.mm.zoombox().map(map),
-        fullscreen: wax.mm.fullscreen().map(map),
-        legend: wax.mm.legend().map(map),
-        attribution: wax.mm.attribution().map(map)
-    };
+  var ui = {
+    zoomer: wax.mm.zoomer().map(map).smooth(true),
+    pointselector: wax.mm.pointselector().map(map),
+    hash: wax.mm.hash().map(map),
+    zoombox: wax.mm.zoombox().map(map),
+    fullscreen: wax.mm.fullscreen().map(map),
+    legend: wax.mm.legend().map(map),
+    attribution: wax.mm.attribution().map(map)
+  };
 
-    function unique(x) {
-        var u = {}, l = [];
-        for (var i = 0; i < x.length; i++) u[x[i]] = true;
-        for (var a in u) { if (a) l.push(a); }
+  function unique(x) {
+    var u = {}, l = [];
+    for (var i = 0; i < x.length; i++) u[x[i]] = true;
+      for (var a in u) { if (a) l.push(a); }
         return l;
     }
 
     ui.refresh = function() {
-        if (!map) return console && console.error('ui not attached to map');
+      if (!map) return console && console.error('ui not attached to map');
 
-        var attributions = [], legends = [];
-        for (var i = 0; i < map.layers.length; i++) {
-            if (map.layers[i].enabled && map.layers[i].tilejson) {
-                var attribution = map.layers[i].tilejson().attribution;
-                if (attribution) attributions.push(attribution);
-                var legend = map.layers[i].tilejson().legend;
-                if (legend) legends.push(legend);
-            }
+      var attributions = [], legends = [];
+      for (var i = 0; i < map.layers.length; i++) {
+        if (map.layers[i].enabled && map.layers[i].tilejson) {
+          var attribution = map.layers[i].tilejson().attribution;
+          if (attribution) attributions.push(attribution);
+          var legend = map.layers[i].tilejson().legend;
+          if (legend) legends.push(legend);
         }
+      }
 
-        var unique_attributions = unique(attributions);
-        var unique_legends = unique(legends);
+      var unique_attributions = unique(attributions);
+      var unique_legends = unique(legends);
 
-        ui.attribution.content(unique_attributions.length ? unique_attributions.join('<br />') : '');
-        ui.legend.content(unique_legends.length ? unique_legends.join('<br />') : '');
+      ui.attribution.content(unique_attributions.length ? unique_attributions.join('<br />') : '');
+      ui.legend.content(unique_legends.length ? unique_legends.join('<br />') : '');
 
-        ui.attribution.element().style.display = unique_attributions.length ? '' : 'none';
-        ui.legend.element().style.display = unique_legends.length ? '' : 'none';
+      ui.attribution.element().style.display = unique_attributions.length ? '' : 'none';
+      ui.legend.element().style.display = unique_legends.length ? '' : 'none';
     };
 
     return ui;
-};
-if (typeof mapbox === 'undefined') mapbox = {};
+  };
+  if (typeof mapbox === 'undefined') mapbox = {};
 
-mapbox.interaction = function() {
+  mapbox.interaction = function() {
 
     var interaction = wax.mm.interaction(),
-        auto = false;
+    auto = false;
 
     interaction.refresh = function() {
-        var map = interaction.map();
-        if (!auto || !map) return interaction;
-        for (var i = map.layers.length - 1; i >= 0; i --) {
-            if (map.layers[i].enabled) {
-                var tj = map.layers[i].tilejson && map.layers[i].tilejson();
-                if (tj && tj.template) return interaction.tilejson(tj);
-            }
+      var map = interaction.map();
+      if (!auto || !map) return interaction;
+      for (var i = map.layers.length - 1; i >= 0; i --) {
+        if (map.layers[i].enabled) {
+          var tj = map.layers[i].tilejson && map.layers[i].tilejson();
+          if (tj && tj.template) return interaction.tilejson(tj);
         }
-        return interaction.tilejson({});
+      }
+      return interaction.tilejson({});
     };
 
     interaction.auto = function() {
-        auto = true;
-        interaction.on(wax.tooltip()
-            .animate(true)
-            .parent(interaction.map().parent)
-            .events()).on(wax.location().events());
-        return interaction.refresh();
+      auto = true;
+      interaction.on(wax.tooltip()
+        .animate(true)
+        .parent(interaction.map().parent)
+        .events()).on(wax.location().events());
+      return interaction.refresh();
     };
 
     return interaction;
-};
-if (typeof mapbox === 'undefined') mapbox = {};
+  };
+  if (typeof mapbox === 'undefined') mapbox = {};
 
 
-mapbox.util = {
+  mapbox.util = {
 
     // Asynchronous map that groups results maintaining order
     asyncMap: function(values, func, callback) {
-        var remaining = values.length,
-            results = [];
+      var remaining = values.length,
+      results = [];
 
-        function next(index) {
-            return function(result) {
-                results[index] = result;
-                remaining--;
-                if (!remaining) callback(results);
-            };
-        }
+      function next(index) {
+        return function(result) {
+          results[index] = result;
+          remaining--;
+          if (!remaining) callback(results);
+        };
+      }
 
-        for (var i = 0; i < values.length; i++) {
-            func(values[i], next(i));
-        }
+      for (var i = 0; i < values.length; i++) {
+        func(values[i], next(i));
+      }
     }
-};
+  };

@@ -4,6 +4,8 @@ var TileJSONs = [
     'http://a.tiles.mapbox.com/v3/moasth.chateaux.jsonp'
 ];
 
+$("#content").mCustomScrollbar({theme:'dark-thin',scrollButtons:{enable:true},advanced:{updateOnContentResize: true}});
+
 $('#map').mapbox(TileJSONs, function(map, tiledata) {
 
     // Assign readable names to all layers
@@ -18,8 +20,11 @@ $('#map').mapbox(TileJSONs, function(map, tiledata) {
 
     // Disable all overlay layers by default
     //map.disableLayer('chateaux');
+    
+    // Commenté pour afficher les châteaux dès le chargement de la page
     map.getLayer('chateaux').disable();
-
+    //
+    
     // Set initial latitude, longitude and zoom level
     /*map.setCenterZoom({
         lat: 48.583,
@@ -34,6 +39,5 @@ $('#map').mapbox(TileJSONs, function(map, tiledata) {
     // Enable share control
     mapbox.share().map(map).add();
 
-   
-
+    $('[data-control="switcher"] a').switchLayer(); 
 });
