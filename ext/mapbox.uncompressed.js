@@ -6148,11 +6148,36 @@ wax.tooltip = function() {
             $("#content p").html(pages[pageKey].extract);
           }
 
+         /* jQuery.ajax({
+            url: '/path/to/file',
+            type: 'POST',
+            dataType: 'xml/html/script/json/jsonp',
+            data: {param1: 'value1'},
+            complete: function(xhr, textStatus) {
+              //called when complete
+            },
+            success: function(data, textStatus, xhr) {
+              //called when successful
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              //called when there is an error
+            }
+          });*/
+          
+
+
           function getWkpdData(t){
+            
+            $("#content").addClass("loading");
+
             $.ajax(
             {
               url: "http://fr.wikipedia.org/w/api.php?format=json&action=query&titles="+t+"&prop=extracts",
               dataType: "jsonp",
+              complete: function()
+              {
+                $("#content").removeClass("loading");
+              },
               success: function(json)
               {
                 var pages = json.query.pages;
@@ -6165,12 +6190,15 @@ wax.tooltip = function() {
 
           function on(o) {
             var content;
+            var $title = $("#content h1");
+
             if (o.e.type === 'mousemove' || !o.e.type) {
               if (!popped) {
                 content = o.content || o.formatter({ format: 'teaser' }, o.data);
                 if (!content || content == _currentContent) return;
                 // TSC 
-                if (o.data.wikipedia) getWkpdData(o.data.wikipedia);
+                if (o.data.name !== $title.html() && o.data.wikipedia) getWkpdData(o.data.wikipedia);
+                if (!o.data.wikipedia) $("#content p").html("Aucune information n'est disponible");
                 hide();
                 parent.style.cursor = 'pointer';
                 tooltips.push(parent.appendChild(getTooltip(content)));
